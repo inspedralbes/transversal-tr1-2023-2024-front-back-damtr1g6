@@ -1,17 +1,10 @@
 <template>
     <v-layout>
-        <v-app-bar color="purple">
-            <v-app-bar-nav-icon>
-                <v-icon icon="mdi-circle-slice-4"> </v-icon>
-            </v-app-bar-nav-icon>
-            <v-app-bar-title>
-                FlixHub
-            </v-app-bar-title>
+        <v-app-bar color="blue">
+            <v-img class="mx-2 ml-5" src="../assets/icon.png" max-height="65" max-width="65" contain></v-img>
             <v-spacer></v-spacer>
 
-            <v-btn icon>
-                <v-icon :icon="`mdiSvg:${mdiAccount}`"></v-icon>
-            </v-btn>
+            <v-img class="mx-2 mr-10" src="../assets/user.png" max-height="40" max-width="40" contain></v-img>
         </v-app-bar>
 
         <v-main>
@@ -28,7 +21,6 @@
                                                     <v-icon>mdi-magnify</v-icon>
                                                 </v-btn>
                                             </template>
-
                                         </v-menu>
                                     </template>
                                 </v-text-field>
