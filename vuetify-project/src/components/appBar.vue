@@ -29,22 +29,22 @@
                     </v-container>
                 </v-form>
                 <v-row>
-                    <v-col cols="2">
+                    <v-col cols="3" v-for="producto in this.productos">
                         <v-card style="height: 510px;">
                             <v-img
                                 src="https://img.freepik.com/fotos-premium/3d-burger-sandwich-for-social-media-post-7_351245-1478.jpg"
                                 height="380px" alter="no encontrado" cover></v-img>
 
                             <v-card-title>
-                                TITULO
+                                {{producto.nombre}}
                             </v-card-title>
 
                             <v-card-subtitle>
-                                DSADAS
+                               {{producto.precio}}
                             </v-card-subtitle>
 
                             <v-card-actions icon>
-                                <v-btn color="orange-lighten-2" variant="text">Comprar</v-btn>
+                                <v-btn color="orange-lighten-2" variant="text">Habilitar</v-btn>
                             </v-card-actions>
 
                         </v-card>
@@ -58,9 +58,19 @@
 </template>
 
 <script>
+import { getProductes } from '@/communicationManager';
 export default {
     data: () => ({
+        productos:[]
     }),
+    created(){
+        console.log("CREATED");
+        getProductes()
+        .then((data) =>{
+            this.productos = data;
+            console.log(this.productos);
+        })
+    },
     methods: {
     }
 }
