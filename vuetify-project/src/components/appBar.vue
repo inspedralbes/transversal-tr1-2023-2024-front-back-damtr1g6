@@ -34,7 +34,7 @@ export default {
 
         <v-main>
             <v-container>
-                <!-- <v-form class="box-write">
+                <v-form class="box-write">
                     <v-container>
                         <v-row>
                             <v-col cols="12">
@@ -52,7 +52,7 @@ export default {
                             </v-col>
                         </v-row>
                     </v-container>
-                </v-form> -->
+                </v-form>
                 <v-row>
                     <v-col cols="3" v-for="producto in this.productos">
                         <Producto :producto="producto" />

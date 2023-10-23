@@ -9,7 +9,9 @@ export default {
         modal: false,
     }),
     methods: {
+        changeState(){
 
+        }
     },
 
     mounted() {
@@ -28,11 +30,13 @@ export default {
         </v-card-title>
 
         <v-card-subtitle>
-            {{ producto.precio }}
+            {{ producto.descripcion }}
         </v-card-subtitle>
 
         <v-card-actions icon>
-            <v-btn color="orange-lighten-2" variant="text">Habilitar</v-btn>
+            <v-card-text>{{ producto.precio }}</v-card-text>
+            <v-spacer></v-spacer>
+            <v-btn color="orange-lighten-2" variant="text" :@click="changeState()">{{producto.estado}}</v-btn>
         </v-card-actions>
 
     </v-card>
