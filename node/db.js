@@ -1,5 +1,15 @@
 var mysql = require('mysql2');
 const fs = require('fs');
+var express = require("express");
+var bodyP = require("body-parser");
+var cors = require("cors");
+var app = express()
+const PORT = 3000
+
+
+app.use(cors());
+app.use(bodyP.json());
+app.use(express.json());
 const date = new Date();
 
 var con = mysql.createConnection({
@@ -28,5 +38,15 @@ function cerrarConexion() {
     })
 }
 
-conectarBD()
-cerrarConexion()
+function selectDB(){
+    var sql = "SELECT * FROM Productos";
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+        console.log(result);
+    });
+}
+
+app.get("/")
+app.listen(PORT, () => {
+    console.log("SERVER RUNNING " + PORT)
+})
