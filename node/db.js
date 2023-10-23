@@ -38,19 +38,36 @@ function cerrarConexion() {
     })
 }
 
-function selectDB(){
-    var sql = "SELECT * FROM Productos";
-    con.query(sql, function (err, result) {
-        if (err) throw err;
-        return result;
+function selectDB() {
+    return new Promise((resolve, reject) => {
+        var sql = "SELECT * FROM Productos";
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
     });
 }
 
-app.get("/productos",(req,res)=>{
+app.get("/productos", (req, res) => {
     console.log("GET:: /productos");
-    var productos = selectDB();
-    console.log(productos);
-} )
+    try {
+        conectarBD();
+        selectDB()
+        .then((data)=>{
+            const productos = data;
+            console.log(productos);
+            res.json(productos);
+        })
+        cerrarConexion();
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener productos' });
+    }
+});
 
 app.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT)
