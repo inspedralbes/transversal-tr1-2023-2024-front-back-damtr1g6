@@ -42,11 +42,16 @@ function selectDB(){
     var sql = "SELECT * FROM Productos";
     con.query(sql, function (err, result) {
         if (err) throw err;
-        console.log(result);
+        return result;
     });
 }
 
-app.get("/")
+app.get("/productos",(req,res)=>{
+    console.log("GET:: /productos");
+    var productos = selectDB();
+    console.log(productos);
+} )
+
 app.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT)
 })
