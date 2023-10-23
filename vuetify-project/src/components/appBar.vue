@@ -1,3 +1,28 @@
+<script setup>
+import { getProductes } from '@/communicationManager';
+import Producto from "../components/Producto.vue";
+</script>
+
+<script>
+export default {
+    data: () => ({
+        productos: []
+    }),
+    mounted() {
+        console.log("CREATED");
+        getProductes()
+            .then((data) => {
+                console.log("HOla");
+                this.productos = data;
+                console.log(this.productos);
+            })
+    },
+    methods: {
+    }
+}
+
+</script>
+
 <template>
     <v-layout>
         <v-app-bar color="blue">
@@ -9,7 +34,7 @@
 
         <v-main>
             <v-container>
-                <v-form class="box-write">
+                <!-- <v-form class="box-write">
                     <v-container>
                         <v-row>
                             <v-col cols="12">
@@ -27,54 +52,16 @@
                             </v-col>
                         </v-row>
                     </v-container>
-                </v-form>
+                </v-form> -->
                 <v-row>
                     <v-col cols="3" v-for="producto in this.productos">
-                        <v-card style="height: 510px;">
-                            <v-img
-                                src="https://img.freepik.com/fotos-premium/3d-burger-sandwich-for-social-media-post-7_351245-1478.jpg"
-                                height="380px" alter="no encontrado" cover></v-img>
-
-                            <v-card-title>
-                                {{producto.nombre}}
-                            </v-card-title>
-
-                            <v-card-subtitle>
-                               {{producto.precio}}
-                            </v-card-subtitle>
-
-                            <v-card-actions icon>
-                                <v-btn color="orange-lighten-2" variant="text">Habilitar</v-btn>
-                            </v-card-actions>
-
-                        </v-card>
+                        <Producto :producto="producto" />
                     </v-col>
-
                 </v-row>
             </v-container>
         </v-main>
 
     </v-layout>
 </template>
-
-<script>
-import { getProductes } from '@/communicationManager';
-export default {
-    data: () => ({
-        productos:[]
-    }),
-    created(){
-        console.log("CREATED");
-        getProductes()
-        .then((data) =>{
-            this.productos = data;
-            console.log(this.productos);
-        })
-    },
-    methods: {
-    }
-}
-
-</script>
 
 <style scoped></style>
