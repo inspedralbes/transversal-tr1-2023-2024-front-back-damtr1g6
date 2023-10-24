@@ -100,6 +100,20 @@ function deleteDBProductos(id){
         }
     });
 }
+
+function selectDBUsuarios(){
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = "SELECT * FROM Usuario";
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+}
 app.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT)
 })
@@ -142,6 +156,16 @@ app.post("/productoUpdate", (req, res) => {
     updateDBProducto(producto)
 })
 
+app.get("/usuarios", (req, res)=>{
+    console.log("GET:: /Usuarios");
+    selectDBUsuarios()
+        .then((data) => {
+            res.json(data);
+        })
+        .catch((error) => {
+            console.log("error. " + error);
+        })
+})
 
 
 
