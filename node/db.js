@@ -114,6 +114,19 @@ function selectDBUsuarios(){
         });
     });
 }
+
+function insertDBUsuario(email, usuario, rol, tarjeta, passwd){
+    let con = conectDB();
+    var sql = "INSERT INTO Usuario (email, usuario, rol, tarjeta, passwd)VALUES ('"+ email +"', '"+usuario+"', '"+rol +"', '"+tarjeta+"', '"+passwd+"');";
+    con.query(sql, function (err, result) {
+        if (err) {
+            console.log("error insert producto");
+        } else {
+            console.log(result);
+        }
+    });
+}
+
 app.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT)
 })
@@ -165,6 +178,19 @@ app.get("/usuarios", (req, res)=>{
         .catch((error) => {
             console.log("error. " + error);
         })
+})
+
+app.post("/usuario", (req, res)=>{
+    console.log("POST:: /Usuario");
+    const user = req.body;
+    const email = user.email
+    const usuario = user.usuario
+    const rol = user.rol
+    const tarjeta = user.tarjeta
+    const passwd=user.passwd
+    
+    insertDBUsuario(email, usuario, rol, tarjeta, passwd)
+    res.json(user)
 })
 
 
