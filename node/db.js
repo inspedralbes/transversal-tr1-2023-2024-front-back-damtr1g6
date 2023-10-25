@@ -19,6 +19,8 @@ const dbConfig = {
     database: "a22jhepincre_PR1Tienda"
 };
 
+/* --- GESTION DE PRODUCTOS --- */
+
 app.get("/productos", (req, res) => {
     console.log("GET:: /productos");
     selectDBProductes()
@@ -57,6 +59,10 @@ app.post("/productoUpdate", (req, res) => {
     updateDBProducto(producto)
 })
 
+/* --- CERRAR GESTION DE PRODUCTOS --- */
+
+/* --- GESTION DE USUARIOS --- */
+
 app.post("/usuario", async (req, res) => {
     // let email = req.body.email;
     let email = "email@gmail.com";
@@ -81,21 +87,29 @@ app.post("/miUsuario", (req, res) => {
     res.json(user)
 })
 
-app.post("/createComanda", async (req, res) => {
-    // let id = req.body.id;
-    let id = 1;
-    insertDBComanda(id)
-})
+/* --- CERRAR GESTION DE USUARIOS --- */
+
+/* --- GESTION DE COMANDAS --- */
 
 app.get("/getComandas", async (req, res) => {
     res.send(await selectComanda());
 })
 
-app.post("/addProductCarrito", async (req, res) => {
-    // let id = req.body.id;
-    let id = 1;
-    insertDBProductCarrito(id);
+app.post("/createComanda", async (req, res) => {
+    // let id_user = req.body.id;
+    let id_user = 1;
+    res.send({ id_comanda: await insertDBComanda(id_user) });
 })
+
+app.post("/addProductCarrito", async (req, res) => {
+    // let id_comanda = req.body.id_comanda;
+    // let id_producto = req.body.id_producto;
+    let id_comanda = 1;
+    let id_producto = 2;
+    insertDBProductCarrito(id_comanda, id_producto);
+})
+
+/* --- CERRAR GESTION DE COMANDAS --- */
 
 app.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT)
@@ -217,21 +231,24 @@ function insertDBUsuario(email, usuario, rol, tarjeta, passwd) {
 }
 
 function insertDBComanda(id) {
-    let con = conectDB();
-    var sql = `INSERT INTO Comanda(estado, id_user, comentarios)values("Pending", ${id}, "No comments.")`;
-    con.query(sql, function (err, result) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log(result);
-        }
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("Pending", ${id}, "No comments.")`;
+
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result.insertId);
+            }
+            disconnectDB(con);
+        });
     });
-    disconnectDB(con);
 }
 
-function insertDBProductCarrito(id) {
+function insertDBProductCarrito(id_comanda, id_producto) {
     let con = conectDB();
-    var sql = `INSERT INTO Comanda(estado, id_user, comentarios)values("Pending", ${id}, "No comments.")`;
+    var sql = `INSERT INTO Contiene (id_producto, id_comanda) VALUES (${id_producto}, ${id_comanda});`;
     con.query(sql, function (err, result) {
         if (err) {
             console.log(err);
