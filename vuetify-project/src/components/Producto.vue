@@ -5,7 +5,7 @@ import { deleteProducte, updateProducte } from '@/communicationManager';
 <script>
 
 export default {
-    props: ["producto"],
+    props: ["producto", "getProductes"],
     data: () => ({
         modal: false,
         dialog: false,
@@ -16,10 +16,12 @@ export default {
         },
         async deleteP(id) {
             await deleteProducte(id);
+            this.getProductes();
             console.log("DELETE");
         },
-        async updateP(producte){
+        async updateP(producte) {
             await updateProducte(JSON.stringify(producte))
+            this.getProductes();
             console.log("UPDATE");
         }
     },

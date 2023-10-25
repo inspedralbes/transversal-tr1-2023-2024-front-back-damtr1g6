@@ -18,36 +18,31 @@ export default {
         dialog: false,
     }),
     mounted() {
-        console.log("CREATED");
         getProductes()
             .then((data) => {
-                console.log("HOla");
                 this.productos = data;
-                console.log(this.productos);
             })
     },
     methods: {
-        async addProduct(){
+        async addProduct() {
             await addProducte(JSON.stringify(this.producto))
-            console.log("AÑADIDO");
             getProductes()
-            .then((data) => {
-                console.log("HOla");
-                this.productos = data;
-                console.log(this.productos);
-            })
-            console.log("GET:: HECHO");
+                .then((data) => {
+                    this.productos = data;
+                })
         },
-        async deleteP(id){
+        async deleteP(id) {
             await deleteProducte(id);
-            console.log("DELETE");
             getProductes()
-            .then((data) => {
-                console.log("HOla");
-                this.productos = data;
-                console.log(this.productos);
-            })
-            console.log("GET:: HECHO");
+                .then((data) => {
+                    this.productos = data;
+                })
+        },
+        async callGetProductes() {
+            getProductes()
+                .then((data) => {
+                    this.productos = data;
+                })
         }
     }
 }
@@ -120,7 +115,8 @@ export default {
                                                                     </v-col>
                                                                     <v-col cols="12" sm="4">
                                                                         <v-select :items="['Disponible', 'No disponible']"
-                                                                            label="Estado*" required v-model="producto.estado"></v-select>
+                                                                            label="Estado*" required
+                                                                            v-model="producto.estado"></v-select>
                                                                     </v-col>
                                                                 </v-row>
                                                             </v-container>
@@ -150,14 +146,14 @@ export default {
                 </v-form>
                 <v-row>
                     <v-col cols="3" v-for="producto in this.productos">
-                        <Producto :producto="producto" />
+                        <Producto :producto="producto" :getProductes="getProductes" />
                     </v-col>
                 </v-row>
             </v-container>
         </v-main>
 
         <v-main class="box-comandes">
-            
+
         </v-main>
     </v-layout>
 </template>
