@@ -146,7 +146,7 @@ export default {
                 </v-form>
                 <v-row>
                     <v-col cols="3" v-for="producto in this.productos">
-                        <Producto :producto="producto" :getProductes="getProductes" />
+                        <Producto :producto="producto" :callGetProductes="callGetProductes" />
                     </v-col>
                 </v-row>
             </v-container>
