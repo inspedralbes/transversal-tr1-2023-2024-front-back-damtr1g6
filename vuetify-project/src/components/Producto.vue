@@ -31,7 +31,7 @@ export default {
 </script>
 
 <template>
-    <v-card style="height: 510px;">
+    <v-card style="height: 510px">
         <v-img src="https://img.freepik.com/fotos-premium/3d-burger-sandwich-for-social-media-post-7_351245-1478.jpg"
             height="380px" alter="no encontrado" cover></v-img>
 
@@ -46,7 +46,6 @@ export default {
         <v-card-actions icon>
             <v-card-text>{{ producto.precio }}</v-card-text>
             <v-spacer></v-spacer>
-            <v-btn color="orange-lighten-2" variant="text" @click="changeState(producto.id)">{{ producto.estado }}</v-btn>
             <v-btn color="orange-lighten-2" variant="text" @click="deleteP(producto.id)">DELETE</v-btn>
             <v-dialog v-model="dialog" persistent width="1024">
                 <template v-slot:activator="{ props }">
