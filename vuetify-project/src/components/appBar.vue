@@ -15,6 +15,7 @@ export default {
             "stock": 0,
             "estado": ""
         },
+        comandes:[],
         dialog: false,
     }),
     mounted() {
@@ -58,7 +59,7 @@ export default {
             <v-img class="mx-2 mr-10" src="../assets/user.png" max-height="40" max-width="40" contain></v-img>
         </v-app-bar>
 
-        <v-main class="box-productos">
+        <v-main class="box-productos" v-if="false">
             <v-container>
                 <v-form class="box-write">
                     <v-container>
@@ -153,7 +154,13 @@ export default {
         </v-main>
 
         <v-main class="box-comandes">
+            <v-container>
+                <v-row>
+                    <v-col cols="12" v-for="">
 
+                    </v-col>
+                </v-row>
+            </v-container>
         </v-main>
     </v-layout>
 </template>
