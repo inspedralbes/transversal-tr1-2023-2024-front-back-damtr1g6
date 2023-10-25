@@ -87,6 +87,10 @@ app.post("/createComanda", async (req, res) => {
     insertDBComanda(id)
 })
 
+app.get("/getComandas", async (req, res) => {
+    res.send(await selectComanda());
+})
+
 app.post("/addProductCarrito", async (req, res) => {
     // let id = req.body.id;
     let id = 1;
@@ -226,14 +230,33 @@ function insertDBComanda(id) {
 }
 
 function insertDBProductCarrito(id) {
-    // let con = conectDB();
-    // var sql = `INSERT INTO Comanda(estado, id_user, comentarios)values("Pending", ${id}, "No comments.")`;
-    // con.query(sql, function (err, result) {
-    //     if (err) {
-    //         console.log(err);
-    //     } else {
-    //         console.log(result);
-    //     }
-    // });
-    // disconnectDB(con);
+    let con = conectDB();
+    var sql = `INSERT INTO Comanda(estado, id_user, comentarios)values("Pending", ${id}, "No comments.")`;
+    con.query(sql, function (err, result) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(result);
+        }
+    });
+    disconnectDB(con);
+}
+
+function selectComanda() {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `SELECT P.id, P.nombre, P.precio, P.stock, P.estado, CM.estado
+                    FROM Productos AS P
+                    JOIN Contiene AS C ON P.id = C.id_producto
+                    JOIN Comanda AS CM ON C.id_comanda = CM.id`;
+
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+        disconnectDB(con);
+    });
 }
