@@ -57,15 +57,11 @@ app.post("/productoUpdate", (req, res) => {
     updateDBProducto(producto)
 })
 
-app.post("/usuarios", (req, res) => {
-    console.log("GET:: /Usuarios");
-    selectDBUsuarios()
-        .then((data) => {
-            res.json(data);
-        })
-        .catch((error) => {
-            console.log("error. " + error);
-        })
+app.post("/usuario", async (req, res) => {
+    // let email = req.body.email;
+    let email = "email@gmail.com";
+    let myUser = await selectDBMiUsuario(email);
+    res.send({ "id": myUser[0].id, "username": myUser[0].usuario, "email": myUser[0].email });
 })
 
 app.post("/usuario", (req, res) => {
@@ -86,19 +82,15 @@ app.post("/miUsuario", (req, res) => {
 })
 
 app.post("/createComanda", async (req, res) => {
-    const user = req.body;
-    const email = user.email;
-
-    let myUser = await selectDBMiUsuario(email);
-    insertDBComanda(myUser[0].id)
+    // let id = req.body.id;
+    let id = 1;
+    insertDBComanda(id)
 })
 
 app.post("/addProductCarrito", async (req, res) => {
-    const user = req.body;
-    const email = user.email;
-
-    let myUser = await selectDBMiUsuario(email);
-    insertDBProductCarrito(myUser[0].id)
+    // let id = req.body.id;
+    let id = 1;
+    insertDBProductCarrito(id);
 })
 
 app.listen(PORT, () => {
@@ -187,21 +179,6 @@ function deleteDBProductos(id) {
         }
     });
     disconnectDB(con);
-}
-
-function selectDBUsuarios() {
-    return new Promise((resolve, reject) => {
-        let con = conectDB();
-        var sql = "SELECT * FROM Usuario";
-        con.query(sql, function (err, result) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        });
-        disconnectDB(con);
-    });
 }
 
 function selectDBMiUsuario(email) {
