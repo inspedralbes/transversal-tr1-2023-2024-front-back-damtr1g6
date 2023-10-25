@@ -1,6 +1,8 @@
 <script setup>
 import { getProductes, addProducte, deleteProducte } from '@/communicationManager';
 import Producto from "../components/Producto.vue";
+import ListadoComandes from "../components/ListadoComandes.vue";
+import RecepcioComandes from "../components/RecepcioComandes.vue"
 </script>
 
 <script>
@@ -15,8 +17,9 @@ export default {
             "stock": 0,
             "estado": ""
         },
-        comandes:[],
+        comandes: [],
         dialog: false,
+        show: false
     }),
     mounted() {
         getProductes()
@@ -157,15 +160,11 @@ export default {
             </v-container>
         </v-main>
 
-        <v-main class="box-comandes">
-            <v-container>
-                <v-row>
-                    <!-- <v-col cols="12" v-for="">
+        <ListadoComandes v-if="false"/>
 
-                    </v-col> -->
-                </v-row>
-            </v-container>
-        </v-main>
+        <RecepcioComandes />
+        
+
     </v-layout>
 </template>
 
