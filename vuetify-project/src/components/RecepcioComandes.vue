@@ -19,7 +19,7 @@ export default {
     mounted() {
         getComandes()
             .then((data) => {
-                this.comandes = data
+                this.comandes = data.filter(comanda => comanda.estado_comanda == "RECIBIDA");
                 console.log(this.comandes);
             })
     }
@@ -30,7 +30,7 @@ export default {
         <v-container>
             <v-row>
                 <v-col cols="6" v-for="comanda in this.comandes">
-                    <v-card v-if="comanda.estado_comanda === 'PROCESANDO'">
+                    <v-card>
                         <v-card-title>
                             Comanda: {{ comanda.id_comanda }}
                         </v-card-title>
@@ -39,7 +39,7 @@ export default {
                         </v-card-text>
 
                         <v-card-actions>
-                            <v-btn @click="changeState(comanda.id_comanda, 'ACEPTADA')">ACEPTAR</v-btn>
+                            <v-btn @click="changeState(comanda.id_comanda, 'PROCESANDO')">ACEPTAR</v-btn>
                             <v-btn>DENEGAR</v-btn>
                             <v-spacer></v-spacer>
                             <v-btn @click="show = !show">DETAILS</v-btn>
