@@ -60,7 +60,9 @@ export default {
             <v-img class="mx-2 ml-5" src="../assets/icon.png" max-height="65" max-width="65" contain></v-img>
             <v-spacer></v-spacer>
 
-            <v-btn></v-btn>
+            <v-btn @click="screen='recepcionComandes'">Recepcio comandes</v-btn>
+            <v-btn @click="screen='listadoComandes'">Llistat comandes</v-btn>
+            <v-btn @click="screen='resumComandes'">Resum comandes</v-btn>
             <v-img class="mx-2 mr-10" src="../assets/user.png" max-height="40" max-width="40" contain></v-img>
         </v-app-bar>
 
@@ -171,6 +173,9 @@ export default {
         </div>
         <div v-if="screen === 'listadoComandes'">
             <ListadoComandes />
+        </div>
+        <div v-if="screen === 'resumComandes'">
+            
         </div>
 
 
