@@ -38,7 +38,7 @@ io.on('connection', (socket) => {
         const index = comandas.findIndex(item => item.id == id_comanda);
         comandas[index].estado = "Finalizado";
 
-        changeEstadoComanda(id_comanda, "Finalizado");
+        updateState(id_comanda, "Finalizado");
         io.emit('comandas', comandas);
     });
 
@@ -122,7 +122,21 @@ app.post("/miUsuario", (req, res) => {
 /* --- GESTION DE COMANDAS --- */
 
 app.get("/getComandas", async (req, res) => {
-    res.send(await selectComanda());
+    const comandas = await selectComanda();
+    comandas.forEach(comanda => {
+        if (comanda.productos != null) {
+            var productos = comanda.productos.split(",");
+            comanda.productos = productos;
+        }
+        
+    })
+    res.send(comandas);
+})
+
+app.post("/:updateState/:id", async(req, res)=>{
+    const estado = req.params.updateState;
+    const id = req.params.id;
+    res.send(await updateState(id, estado))
 })
 
 app.post("/createComanda", async (req, res) => {
@@ -329,11 +343,15 @@ function deleteDBComanda(id) {
 function selectComanda() {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT P.id, P.nombre, P.precio, P.stock, P.estado, CM.estado
-                    FROM Productos AS P
-                    JOIN Contiene AS C ON P.id = C.id_producto
-                    JOIN Comanda AS CM ON C.id_comanda = CM.id`;
-
+        var sql = `SELECT C.id_comanda, C.estado_comanda,GROUP_CONCAT(P.nombre) AS productos
+        FROM (
+            SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+            FROM Comanda
+        ) AS C
+        LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
+        LEFT JOIN Productos AS P ON CO.id_producto = P.id
+        GROUP BY C.id_comanda;
+        `;
         con.query(sql, function (err, result) {
             if (err) {
                 reject(err);
@@ -345,18 +363,15 @@ function selectComanda() {
     });
 }
 
-function changeEstadoComanda(id_comanda, estado) {
-    return new Promise((resolve, reject) => {
-        let con = conectDB();
-        var sql = `UPDATE Comanda SET estado = '${estado}' WHERE id = ${id_comanda};`;
-
-        con.query(sql, function (err, result) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        });
-        disconnectDB(con);
+function updateState(id, estado){
+    let con = conectDB();
+    var sql = "UPDATE Comanda SET estado='" + estado + "' WHERE id=" + id;
+    con.query(sql, function (err, result) {
+        if (err) {
+            console.log("error update comanda");
+        } else {
+            console.log(result);
+        }
     });
+    disconnectDB(con);
 }
