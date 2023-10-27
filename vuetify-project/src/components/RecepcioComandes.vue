@@ -5,7 +5,8 @@ export default {
     data: () => ({
         comandes: [],
         show: false,
-        idMostrar:""
+        idMostrar: "",
+        color: 1
     }),
     methods: {
         async changeState(id, state) {
@@ -16,10 +17,11 @@ export default {
                     console.log(this.comandes);
                 })
         },
-        mostrar(id){
+        mostrar(id) {
             this.show = !this.show;
             this.idMostrar = id;
-        }
+        },
+        
     },
     mounted() {
         getComandes()
@@ -39,8 +41,9 @@ export default {
                         <v-card-title>
                             Comanda: {{ comanda.id_comanda }}
                         </v-card-title>
-                        <v-card-text v-if="comanda.importe_total != null"><b>{{ comanda.estado_comanda }}</b></v-card-text>
-
+                        <v-card-text v-if="comanda.importe_total != null">{{ comanda.importe_total }} $
+                        </v-card-text>
+                        <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
                         <v-card-actions>
                             <v-btn @click="changeState(comanda.id_comanda, 'PROCESANDO')">ACEPTAR</v-btn>
                             <v-btn>DENEGAR</v-btn>
@@ -52,7 +55,7 @@ export default {
 
                         <div v-if="show === true">
                             <v-card>
-                                <v-card-title v-if="comanda.productos =! null">
+                                <v-card-title v-if="comanda.productos = ! null">
                                     Productos: {{ comanda.productos.length }}
                                 </v-card-title>
                                 <v-card-text v-for="(producto, index) in comanda.productos">
