@@ -7,6 +7,7 @@ const path = require('path');
 const socketIO = require('socket.io');
 var bodyP = require("body-parser");
 var cors = require("cors");
+const { connect } = require('http2');
 
 const app = express();
 const server = http.createServer(app);
@@ -100,8 +101,8 @@ app.post("/productoUpdate", (req, res) => {
 /* --- GESTION DE USUARIOS --- */
 
 app.post("/usuario", async (req, res) => {
-    // let email = req.body.email;
-    let email = "email@gmail.com";
+    let email = req.body.email;
+    //let email = "email@gmail.com";
     let myUser = await selectDBMiUsuario(email);
     res.send({ "id": myUser[0].id, "username": myUser[0].usuario, "email": myUser[0].email });
 })
@@ -117,6 +118,21 @@ app.post("/usuario", (req, res) => {
 
     insertDBUsuario(email, usuario, rol, tarjeta, passwd)
     res.json(user)
+})
+
+app.post("/loginUser", (req,res)=>{
+    const datos = req.body;
+    console.log(datos);
+    selectDBUserLogin(datos.user, datos.passwd)
+    .then((data)=>{
+        console.log(data);
+    if(data.length > 0){
+        res.json({autoritzacio: true})
+    }else{
+        res.json({autoritzacio: false})
+    }
+    })
+    
 })
 
 app.post("/miUsuario", (req, res) => {
@@ -272,7 +288,6 @@ function deleteDBProductos(id) {
 
 function selectDBMiUsuario(email) {
     return new Promise((resolve, reject) => {
-        email = "email@gmail.com";
         let con = conectDB();
         var sql = `SELECT * FROM Usuario WHERE email = "${email}"`;
 
@@ -286,6 +301,21 @@ function selectDBMiUsuario(email) {
             }
         });
     });
+}
+
+function selectDBUserLogin(user, passwd){
+    return new Promise((resolve, reject)=>{
+        let con = conectDB();
+        var sql = `SELECT * FROM Usuario WHERE usuario="${user}" and passwd="${passwd}"`
+        con.query(sql, function(err, result){
+            if(err){
+                reject(err)
+            }else{
+                resolve(result);
+                disconnectDB(con);
+            }
+        })
+    })
 }
 
 function insertDBUsuario(email, usuario, rol, tarjeta, passwd) {
