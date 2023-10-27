@@ -343,14 +343,14 @@ function deleteDBComanda(id) {
 function selectComanda() {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT C.id_comanda, C.estado_comanda,GROUP_CONCAT(P.nombre) AS productos
+        var sql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT(P.nombre) AS productos, SUM(P.precio) AS importe_total
         FROM (
             SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
             FROM Comanda
         ) AS C
         LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
         LEFT JOIN Productos AS P ON CO.id_producto = P.id
-        GROUP BY C.id_comanda;
+        GROUP BY C.id_comanda, C.estado_comanda;        
         `;
         con.query(sql, function (err, result) {
             if (err) {
