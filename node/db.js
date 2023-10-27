@@ -1,11 +1,17 @@
+var express = require("express");
 var mysql = require('mysql2');
 const fs = require('fs');
 const date = new Date();
+const http = require('http');
+const path = require('path');
 
-var express = require("express");
 var bodyP = require("body-parser");
 var cors = require("cors");
 var app = express();
+const socketIO = require('socket.io');
+const server = http.createServer(app);
+const io = socketIO(server);
+
 const PORT = 3672;
 
 app.use(cors());
@@ -18,6 +24,30 @@ const dbConfig = {
     password: "TR1Tienda",
     database: "a22jhepincre_PR1Tienda"
 };
+
+/* --- Socket.io --- */
+
+let comandas = selectComanda();
+
+io.on('connection', (socket) => {
+    socket.on('getComandas', () => {
+        io.emit('comandas', comandas);
+    });
+
+    socket.on('finalizarComanda', (id_comanda) => {
+        const index = comandas.findIndex(item => item.id == id_comanda);
+        comandas[index].estado = "Finalizado";
+
+        changeEstadoComanda(id_comanda, "Finalizado");
+        io.emit('comandas', comandas);
+    });
+
+    socket.on('disconnect', () => {
+
+    });
+});
+
+/* --- CERRAR Socket.io --- */
 
 /* --- GESTION DE PRODUCTOS --- */
 
@@ -101,12 +131,33 @@ app.post("/createComanda", async (req, res) => {
     res.send({ id_comanda: await insertDBComanda(id_user) });
 })
 
-app.post("/addProductCarrito", async (req, res) => {
+app.delete("/deleteComanda", async (req, res) => {
+    // let id_comanda = req.body.id;
+    let id_comanda = 1;
+
+    res.send({ message: deleteDBComanda(id_comanda) });
+})
+
+// app.post("/addProductCarrito", async (req, res) => {
+//     // let id_comanda = req.body.id_comanda;
+//     // let id_producto = req.body.id_producto;
+//     let id_comanda = 1;
+//     let id_producto = 2;
+//     insertDBProductCarrito(id_comanda, id_producto);
+// })
+
+app.post("/buyComanda", async (req, res) => {
     // let id_comanda = req.body.id_comanda;
     // let id_producto = req.body.id_producto;
     let id_comanda = 1;
-    let id_producto = 2;
-    insertDBProductCarrito(id_comanda, id_producto);
+    changeEstadoComanda(id_comanda, "Procesando");
+})
+
+app.post("/finishComanda", async (req, res) => {
+    // let id_comanda = req.body.id_comanda;
+    // let id_producto = req.body.id_producto;
+    let id_comanda = 1;
+    changeEstadoComanda(id_comanda, "Finished");
 })
 
 /* --- CERRAR GESTION DE COMANDAS --- */
@@ -233,7 +284,7 @@ function insertDBUsuario(email, usuario, rol, tarjeta, passwd) {
 function insertDBComanda(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("Pending", ${id}, "No comments.")`;
+        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("Pendiente", ${id}, "No comments.")`;
 
         con.query(sql, function (err, result) {
             if (err) {
@@ -246,18 +297,34 @@ function insertDBComanda(id) {
     });
 }
 
-function insertDBProductCarrito(id_comanda, id_producto) {
-    let con = conectDB();
-    var sql = `INSERT INTO Contiene (id_producto, id_comanda) VALUES (${id_producto}, ${id_comanda});`;
-    con.query(sql, function (err, result) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log(result);
-        }
+function deleteDBComanda(id) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `DELETE FROM Comanda WHERE id = ${id}`;
+
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve("Deleted: " + result);
+            }
+            disconnectDB(con);
+        });
     });
-    disconnectDB(con);
 }
+
+// function insertDBProductCarrito(id_comanda, id_producto) {
+//     let con = conectDB();
+//     var sql = `INSERT INTO Contiene (id_producto, id_comanda) VALUES (${id_producto}, ${id_comanda});`;
+//     con.query(sql, function (err, result) {
+//         if (err) {
+//             console.log(err);
+//         } else {
+//             console.log(result);
+//         }
+//     });
+//     disconnectDB(con);
+// }
 
 function selectComanda() {
     return new Promise((resolve, reject) => {
@@ -266,6 +333,22 @@ function selectComanda() {
                     FROM Productos AS P
                     JOIN Contiene AS C ON P.id = C.id_producto
                     JOIN Comanda AS CM ON C.id_comanda = CM.id`;
+
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+        disconnectDB(con);
+    });
+}
+
+function changeEstadoComanda(id_comanda, estado) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `UPDATE Comanda SET estado = '${estado}' WHERE id = ${id_comanda};`;
 
         con.query(sql, function (err, result) {
             if (err) {
