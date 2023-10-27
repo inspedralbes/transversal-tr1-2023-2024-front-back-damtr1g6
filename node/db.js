@@ -1,20 +1,25 @@
-var express = require("express");
+const express = require('express');
 var mysql = require('mysql2');
 const fs = require('fs');
 const date = new Date();
 const http = require('http');
 const path = require('path');
-
+const socketIO = require('socket.io');
 var bodyP = require("body-parser");
 var cors = require("cors");
-var app = express();
-const socketIO = require('socket.io');
+
+const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
 const PORT = 3672;
 
-app.use(cors());
+const corsOptions = {
+    origin: "http://localhost:3000",
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(bodyP.json());
 app.use(express.json());
 
@@ -30,6 +35,7 @@ const dbConfig = {
 let comandas = selectComanda();
 
 io.on('connection', (socket) => {
+    console.log('Usuario conectado');
     socket.on('getComandas', () => {
         io.emit('comandas', comandas);
     });
@@ -128,12 +134,12 @@ app.get("/getComandas", async (req, res) => {
             var productos = comanda.productos.split(",");
             comanda.productos = productos;
         }
-        
+
     })
     res.send(comandas);
 })
 
-app.post("/:updateState/:id", async(req, res)=>{
+app.post("/:updateState/:id", async (req, res) => {
     const estado = req.params.updateState;
     const id = req.params.id;
     res.send(await updateState(id, estado))
@@ -363,7 +369,7 @@ function selectComanda() {
     });
 }
 
-function updateState(id, estado){
+function updateState(id, estado) {
     let con = conectDB();
     var sql = "UPDATE Comanda SET estado='" + estado + "' WHERE id=" + id;
     con.query(sql, function (err, result) {
