@@ -111,9 +111,10 @@ export default {
                                                                             required></v-text-field>
                                                                     </v-col>
                                                                     <v-col cols="12" sm="4">
-                                                                        <v-text-field label="Imagen*"
+                                                                         <v-text-field label="Imagen*"
                                                                             v-model="producto.imagen_url"
-                                                                            required></v-text-field>
+                                                                             required></v-text-field> 
+                                                                            
                                                                     </v-col>
                                                                     <v-col cols="12" sm="4">
                                                                         <v-text-field label="Stock*"
@@ -140,6 +141,7 @@ export default {
                                                                 Save
                                                             </v-btn>
                                                         </v-card-actions>
+                                            
                                                     </v-card>
                                                 </v-dialog>
                                             </template>
@@ -162,7 +164,7 @@ export default {
 
         <ListadoComandes v-if="false"/>
 
-        <RecepcioComandes />
+        <RecepcioComandes  v-if="false" />
         
 
     </v-layout>

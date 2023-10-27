@@ -1,6 +1,8 @@
 <script setup>
 import { deleteProducte, updateProducte } from '@/communicationManager';
+const baseImageUrl = import.meta.env.VITE_BASE_URL;
 </script>
+
 
 <script>
 
@@ -32,8 +34,10 @@ export default {
 
 <template>
     <v-card style="height: 510px">
-        <v-img src="https://img.freepik.com/fotos-premium/3d-burger-sandwich-for-social-media-post-7_351245-1478.jpg"
-            height="380px" alter="no encontrado" cover></v-img>
+        <!-- <v-img src="https://img.freepik.com/fotos-premium/3d-burger-sandwich-for-social-media-post-7_351245-1478.jpg"
+            height="380px" alter="no encontrado" cover></v-img> -->
+         <v-img :src="`${baseImageUrl}/node/images/${producto.imagen_url}`"  height="380px" alter="Imagen del producto" cover></v-img>
+         <!-- <v-img src="../assets/burrito.png"  height="380px" alt="Imagen del producto" cover eager="true"></v-img> -->
 
         <v-card-title>
             {{ producto.nombre }}

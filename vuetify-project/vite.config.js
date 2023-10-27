@@ -7,12 +7,15 @@ import ViteFonts from 'unplugin-fonts/vite'
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue({
       template: { transformAssetUrls }
     }),
+    
+    
     // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
     vuetify({
       autoImport: true,
@@ -32,7 +35,8 @@ export default defineConfig({
   define: { 'process.env': {} },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      'images': 'transversal-tr1-2023-2024-front-back-damtr1g6/node/images',
     },
     extensions: [
       '.js',
@@ -48,3 +52,6 @@ export default defineConfig({
     port: 3000,
   },
 })
+
+
+
