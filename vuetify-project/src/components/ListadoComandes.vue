@@ -18,8 +18,7 @@ export default {
     mounted() {
         getComandes()
             .then((data) => {
-                //this.comandes = data.filter(comanda => comanda.estado_comanda == "PROCESANDO");
-                this.comandes = data
+                this.comandes = data.filter(comanda => comanda.estado_comanda == "PROCESANDO");
                 console.log(this.comandes);
             })
     }
@@ -45,9 +44,9 @@ export default {
                     </v-card>
                     <v-expand-transition>
 
-                        <div v-if="show === true && idMostrar === comanda.id_comanda">
+                        <div v-if="show == true && idMostrar == comanda.id_comanda">
                             <v-card>
-                                <v-card-title v-if="comanda.productos =! null">
+                                <v-card-title v-if="comanda.productos != null">
                                     Productos: {{ comanda.productos.length }}
                                 </v-card-title>
                                 <v-card-text  v-for="(producto, index) in comanda.productos">
