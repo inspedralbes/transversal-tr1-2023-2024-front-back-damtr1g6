@@ -1,13 +1,21 @@
+<script setup>
+import { getComandes } from '@/communicationManager';
+</script>
 <script>
 export default {
     data: () => ({
+        comandes:[],
         show:false
     }),
     methods: {
         
     },
     mounted() {
-
+        getComandes()
+        .then((data)=>{
+            this.comandes = data
+            console.log(this.comandes);
+        })
     }
 }
 </script>
@@ -15,16 +23,15 @@ export default {
     <v-main class="box-comandes">
             <v-container>
                 <v-row>
-                    <v-col cols="6">
-                        <v-card>
+                    <v-col cols="6" v-for="comanda in this.comandes">
+                        <v-card v-if="comanda != 'PROCESANDO'">
                             <v-card-title>
-                                Comanda
+                                ID: {{comanda.id_comanda}}
                             </v-card-title>
-                            <v-card-text>
-                                dinero
+                            <v-card-text>precio
                             </v-card-text>
                             <v-card-text>
-                                ESTADO
+                                {{comanda.estado_comanda}}
                             </v-card-text>
                             <v-card-actions>
                                 <v-btn @click="show=!show">DETAILS</v-btn>
@@ -32,10 +39,10 @@ export default {
                         </v-card>
                         <v-expand-transition>
 
-                            <div v-if="show === true">
+                            <div v-if="show === true"  v-for="producto in comanda.productos">
                                 <v-card>
                                     <v-card-title>
-                                        TITULO PRODUCTO
+                                        {{producto}}
                                     </v-card-title>
                                     <v-card-text>
                                         <b>ID:</b>  <br>

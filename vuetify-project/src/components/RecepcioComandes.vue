@@ -1,52 +1,65 @@
 <script>
+import { getComandes, updateState } from '@/communicationManager';
+
 export default {
     data: () => ({
-        show:false
+        comandes: [],
+        show: false
     }),
     methods: {
-        
+        async changeState(id, state) {
+            await updateState(id, state)
+            getComandes()
+                .then((data) => {
+                    this.comandes = data
+                    console.log(this.comandes);
+                })
+        }
     },
     mounted() {
-
+        getComandes()
+            .then((data) => {
+                this.comandes = data
+                console.log(this.comandes);
+            })
     }
 }
 </script>
 <template>
     <v-main class="box-recepcio-comandes">
-            <v-container>
-                <v-row>
-                    <v-col cols="6">
-                        <v-card>
-                            <v-card-title>
-                                Comanda
-                            </v-card-title>
-                            <v-card-text>
-                                dinero
-                            </v-card-text>
+        <v-container>
+            <v-row>
+                <v-col cols="6" v-for="comanda in this.comandes">
+                    <v-card v-if="comanda.estado_comanda === 'PROCESANDO'">
+                        <v-card-title>
+                            Comanda: {{ comanda.id_comanda }}
+                        </v-card-title>
+                        <v-card-text>
+                            {{ comanda.imorte_total }}
+                        </v-card-text>
 
-                            <v-card-actions>
-                                <v-btn>ACEPTAR</v-btn>
-                                <v-btn>DENEGAR</v-btn>
-                                <v-spacer></v-spacer>
-                                <v-btn @click="show=!show">DETAILS</v-btn>
-                            </v-card-actions>
-                        </v-card>
-                        <v-expand-transition>
+                        <v-card-actions>
+                            <v-btn @click="changeState(comanda.id_comanda, 'ACEPTADA')">ACEPTAR</v-btn>
+                            <v-btn>DENEGAR</v-btn>
+                            <v-spacer></v-spacer>
+                            <v-btn @click="show = !show">DETAILS</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                    <v-expand-transition>
 
-                            <div v-if="show === true">
-                                <v-card>
-                                    <v-card-title>
-                                        TITULO PRODUCTO
-                                    </v-card-title>
-                                    <v-card-text>
-                                        <b>ID:</b>  <br>
-                                        <b>Precio:</b> <br>
-                                    </v-card-text>
-                                </v-card>
-                            </div>
-                        </v-expand-transition>
-                    </v-col>
-                </v-row>
-            </v-container>
-        </v-main>
+                        <div v-if="show === true" v-for="(producto, index) in comanda.productos">
+                            <v-card>
+                                <v-card-title>
+                                    Productos:
+                                </v-card-title>
+                                <v-card-text>
+                                    {{ index + 1 }}. {{ producto }}
+                                </v-card-text>
+                            </v-card>
+                        </div>
+                    </v-expand-transition>
+                </v-col>
+            </v-row>
+        </v-container>
+    </v-main>
 </template>
