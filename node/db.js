@@ -123,7 +123,7 @@ app.post("/usuario", (req, res) => {
 app.post("/loginUser", (req,res)=>{
     const datos = req.body;
     console.log(datos);
-    selectDBUserLogin(datos.user, datos.passwd)
+    selectDBUserLogin(datos.usuario, datos.passwd)
     .then((data)=>{
         console.log(data);
     if(data.length > 0){
