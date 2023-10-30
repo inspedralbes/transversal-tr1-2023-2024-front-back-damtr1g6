@@ -1,5 +1,6 @@
 <script setup>
 import { getProductes, addProducte, deleteProducte } from '@/services/communicationManager';
+import { socket } from '@/services/socket';
 import Producto from "../components/Producto.vue";
 import ListadoComandes from "../components/ListadoComandes.vue";
 import ResumComandes from "../components/ResumComandes.vue"
@@ -24,6 +25,8 @@ export default {
         screen: "main",
     }),
     mounted() {
+        socket.emit('getComandas', {});
+
         getProductes()
             .then((data) => {
                 this.productos = data;

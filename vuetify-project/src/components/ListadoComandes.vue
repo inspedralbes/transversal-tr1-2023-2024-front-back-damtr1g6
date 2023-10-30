@@ -1,54 +1,31 @@
 <script setup>
 import { getComandes } from '@/services/communicationManager';
-import socket from '@/services/socket';
+import { state, socket } from '@/services/socket';
 </script>
 <script>
 export default {
     data: () => ({
-        comandes: [],
         show: false,
         idMostrar: "",
         color: 1
     }),
-    computed: {
-        cardStyle() {
-            return {
-                backgroundColor: this.determineBackgroundColor(),
-            };
-        },
-    },
     methods: {
         mostrar(id) {
             this.show = !this.show;
             this.idMostrar = id;
             console.log(this.idMostrar);
         },
-        determineBackgroundColor() {
-            // Escribe una lógica para determinar el color de fondo en función de dato_entero
-            switch (this.color) {
-                case 1:
-                    return 'green'; // Ejemplo de color de fondo
-                case 2:
-                    return 'orange'; // Ejemplo de otro color de fondo
-                case 3:
-                    return 'red';
-                default:
-                    return 'white'; // Color de fondo predeterminado
-            }
-        },
         changeState(id, state) {
             socket.emit('changeState', { id: id, state: state });
+        },
+    },
+    computed: {
+        comandas() {
+            return state.comandas[0].filter(comanda => comanda.estado_comanda == "PROCESANDO");
         }
     },
     mounted() {
-        getComandes()
-            .then((data) => {
-                this.comandes = data.filter(comanda => comanda.estado_comanda == "PROCESANDO");
-            })
-
-        socket.on('comandas', (comandas) => {
-            this.comandes = comandas.filter(comanda => comanda.estado_comanda == "PROCESANDO");
-        });
+        socket.emit('getComandas', {});
     },
 }
 </script>
@@ -56,7 +33,7 @@ export default {
     <v-main class="box-comandes">
         <v-container>
             <v-row>
-                <v-col cols="6" v-for="comanda in this.comandes">
+                <v-col cols="6" v-for="comanda in comandas">
                     <v-card :style="{ backgroundColor: comanda.time }">
                         <v-card-title>
                             ID: {{ comanda.id_comanda }}

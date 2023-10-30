@@ -1,10 +1,9 @@
 <script>
 import { getComandes } from '@/services/communicationManager';
-import socket from '@/services/socket';
+import { socket, state } from '@/services/socket';
 
 export default {
     data: () => ({
-        comandes: [],
         show: false,
         idMostrar: "",
         color: 1
@@ -17,15 +16,13 @@ export default {
             socket.emit('deleteComanda', id);
         }
     },
+    computed: {
+        comandas() {
+            return state.comandas[0].filter(comanda => comanda.estado_comanda == "RECIBIDA");
+        }
+    },
     mounted() {
-        getComandes()
-            .then((data) => {
-                this.comandes = data.filter(comanda => comanda.estado_comanda == "RECIBIDA");
-            })
-
-        socket.on('comandas', (comandas) => {
-            this.comandes = comandas.filter(comanda => comanda.estado_comanda == "RECIBIDA");
-        });
+        socket.emit('getComandas', {});
     }
 }
 </script>
@@ -33,7 +30,7 @@ export default {
     <v-main class="box-recepcio-comandes">
         <v-container>
             <v-row>
-                <v-col cols="6" v-for="comanda in this.comandes">
+                <v-col cols="6" v-for="comanda in comandas">
                     <v-card>
                         <v-card-title>
                             Comanda: {{ comanda.id_comanda }}
