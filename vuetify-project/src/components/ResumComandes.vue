@@ -1,5 +1,6 @@
 <script>
 import { getComandes, updateState } from '@/communicationManager';
+import socket from '@/socket';
 
 export default {
     data: () => ({
@@ -7,15 +8,10 @@ export default {
         show: false
     }),
     methods: {
-        async changeState(id, state) {
-            await updateState(id, state)
-            getComandes()
-                .then((data) => {
-                    this.comandes = data
-                    console.log(this.comandes);
-                })
+        changeState(id, state) {
+            socket.emit('changeState', { id: id, state: state });
         },
-        mostrar(id){
+        mostrar(id) {
             this.show = !this.show;
             this.idMostrar = id;
         }
@@ -24,7 +20,6 @@ export default {
         getComandes()
             .then((data) => {
                 this.comandes = data.filter(comanda => comanda.estado_comanda == "PREPARADA");
-                console.log(this.comandes);
             })
     }
 }
@@ -50,7 +45,7 @@ export default {
 
                         <div v-if="show === true">
                             <v-card>
-                                <v-card-title v-if="comanda.productos =! null">
+                                <v-card-title v-if="comanda.productos = ! null">
                                     Productos: {{ comanda.productos.length }}
                                 </v-card-title>
                                 <v-card-text v-for="(producto, index) in comanda.productos">
