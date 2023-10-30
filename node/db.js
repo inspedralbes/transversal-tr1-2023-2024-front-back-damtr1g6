@@ -1,20 +1,26 @@
-var express = require("express");
 var mysql = require('mysql2');
 const fs = require('fs');
 const date = new Date();
+var bodyP = require("body-parser");
+
+const express = require('express');
 const http = require('http');
 const path = require('path');
+const { Server } = require('socket.io');
 
-var bodyP = require("body-parser");
-var cors = require("cors");
-var app = express();
-const socketIO = require('socket.io');
+const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
 const PORT = 3672;
+var cors = require('cors')
 
-app.use(cors());
+app.use(cors())
 app.use(bodyP.json());
 app.use(express.json());
 
@@ -27,18 +33,22 @@ const dbConfig = {
 
 /* --- Socket.io --- */
 
-let comandas = selectComanda();
+io.on('connection', async (socket) => {
+    let comandas = await selectComanda();
+    console.log('Usuario conectado');
 
-io.on('connection', (socket) => {
-    socket.on('getComandas', () => {
+    socket.on('getComandas', async (id) => {
         io.emit('comandas', comandas);
     });
 
-    socket.on('finalizarComanda', (id_comanda) => {
-        const index = comandas.findIndex(item => item.id == id_comanda);
-        comandas[index].estado = "Finalizado";
+    socket.on('changeState', async (comanda) => {
+        updateStateDB(comanda.id, comanda.state);
+        updateStateComandas(comandas, comanda.id, comanda.state);
 
-        updateState(id_comanda, "Finalizado");
+        io.emit('comandas', comandas);
+    });
+
+    socket.on('deleteComanda', async (id) => {
         io.emit('comandas', comandas);
     });
 
@@ -46,6 +56,14 @@ io.on('connection', (socket) => {
 
     });
 });
+
+function updateStateComandas(comandas, idComanda, nuevoEstado) {
+    const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
+
+    comandas[comandaIndex].estado_comanda = nuevoEstado;
+
+    return comandas;
+}
 
 /* --- CERRAR Socket.io --- */
 
@@ -128,15 +146,15 @@ app.get("/getComandas", async (req, res) => {
             var productos = comanda.productos.split(",");
             comanda.productos = productos;
         }
-        
+
     })
     res.send(comandas);
 })
 
-app.post("/:updateState/:id", async(req, res)=>{
+app.post("/:updateState/:id", async (req, res) => {
     const estado = req.params.updateState;
     const id = req.params.id;
-    res.send(await updateState(id, estado))
+    res.send(await updateStateDB(id, estado))
 })
 
 app.post("/createComanda", async (req, res) => {
@@ -176,7 +194,7 @@ app.post("/finishComanda", async (req, res) => {
 
 /* --- CERRAR GESTION DE COMANDAS --- */
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT)
 })
 
@@ -343,14 +361,14 @@ function deleteDBComanda(id) {
 function selectComanda() {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT C.id_comanda, C.estado_comanda,GROUP_CONCAT(P.nombre) AS productos
+        var sql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT(P.nombre) AS productos, SUM(P.precio) AS importe_total
         FROM (
             SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
             FROM Comanda
         ) AS C
         LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
         LEFT JOIN Productos AS P ON CO.id_producto = P.id
-        GROUP BY C.id_comanda;
+        GROUP BY C.id_comanda, C.estado_comanda;        
         `;
         con.query(sql, function (err, result) {
             if (err) {
@@ -363,7 +381,7 @@ function selectComanda() {
     });
 }
 
-function updateState(id, estado){
+function updateStateDB(id, estado) {
     let con = conectDB();
     var sql = "UPDATE Comanda SET estado='" + estado + "' WHERE id=" + id;
     con.query(sql, function (err, result) {

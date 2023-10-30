@@ -1,5 +1,6 @@
 <script>
 import { getComandes, updateState } from '@/communicationManager';
+import socket from '@/socket';
 
 export default {
     data: () => ({
@@ -7,21 +8,19 @@ export default {
         show: false
     }),
     methods: {
-        async changeState(id, state) {
-            await updateState(id, state)
-            getComandes()
-                .then((data) => {
-                    this.comandes = data
-                    console.log(this.comandes);
-                })
+        changeState(id, state) {
+            socket.emit('changeState', { id: id, state: state });
         }
     },
     mounted() {
         getComandes()
             .then((data) => {
                 this.comandes = data.filter(comanda => comanda.estado_comanda == "RECIBIDA");
-                console.log(this.comandes);
             })
+
+        socket.on('comandas', (comandas) => {
+            this.comandes = comandas.filter(comanda => comanda.estado_comanda == "RECIBIDA");
+        });
     }
 }
 </script>
