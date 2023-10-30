@@ -12,14 +12,13 @@ export default {
     }),
     computed: {
         cardStyle() {
-            // Define un objeto de estilo CSS dinámico basado en el valor de dato_entero
             return {
                 backgroundColor: this.determineBackgroundColor(),
             };
         },
     },
     methods: {
-        mostrar(id){
+        mostrar(id) {
             this.show = !this.show;
             this.idMostrar = id;
             console.log(this.idMostrar);
@@ -58,7 +57,7 @@ export default {
         <v-container>
             <v-row>
                 <v-col cols="6" v-for="comanda in this.comandes">
-                    <v-card :style="cardStyle">
+                    <v-card :style="{ backgroundColor: comanda.time }">
                         <v-card-title>
                             ID: {{ comanda.id_comanda }}
                         </v-card-title>
@@ -78,7 +77,7 @@ export default {
                                 <v-card-title v-if="comanda.productos != null">
                                     Productos: {{ comanda.productos.length }}
                                 </v-card-title>
-                                <v-card-text  v-for="(producto, index) in comanda.productos">
+                                <v-card-text v-for="(producto, index) in comanda.productos">
                                     {{ index + 1 }}. {{ producto }}
                                 </v-card-text>
                             </v-card>

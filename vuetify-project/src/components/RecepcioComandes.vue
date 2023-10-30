@@ -12,6 +12,9 @@ export default {
     methods: {
         changeState(id, state) {
             socket.emit('changeState', { id: id, state: state });
+        },
+        deleteComanda(id) {
+            socket.emit('deleteComanda', id);
         }
     },
     mounted() {
@@ -40,7 +43,7 @@ export default {
                         <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
                         <v-card-actions>
                             <v-btn @click="changeState(comanda.id_comanda, 'PROCESANDO')">ACEPTAR</v-btn>
-                            <v-btn>DENEGAR</v-btn>
+                            <v-btn @click="deleteComanda(comanda.id_comanda)">DENEGAR</v-btn>
                             <v-spacer></v-spacer>
                             <v-btn @click="mostrar(comanda.id_comanda)">DETAILS</v-btn>
                         </v-card-actions>

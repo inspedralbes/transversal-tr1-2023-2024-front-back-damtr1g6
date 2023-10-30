@@ -4,7 +4,6 @@ const fs = require('fs');
 const date = new Date();
 var bodyP = require("body-parser");
 
-const express = require('express');
 const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
@@ -34,8 +33,19 @@ const dbConfig = {
 
 /* --- Socket.io --- */
 
+let comandas = [];
+
+async function cargarComandas() {
+    comandas = await selectComanda();
+
+    for (let i = 0; i < comandas.length; i++) {
+        comandas[i].time = "green";
+    }
+}
+
+cargarComandas();
+
 io.on('connection', async (socket) => {
-    let comandas = await selectComanda();
     console.log('Usuario conectado');
 
     socket.on('getComandas', async (id) => {
@@ -50,6 +60,9 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('deleteComanda', async (id) => {
+        deleteComandaDB(id);
+        deleteComandaComandas(comandas, id);
+
         io.emit('comandas', comandas);
     });
 
@@ -63,7 +76,32 @@ function updateStateComandas(comandas, idComanda, nuevoEstado) {
 
     comandas[comandaIndex].estado_comanda = nuevoEstado;
 
+    if (nuevoEstado == "PROCESANDO") {
+        comandas[comandaIndex].time = "green";
+        countTimeComanda(comandas, comandaIndex);
+    }
+
     return comandas;
+}
+
+function deleteComandaComandas(comandas, idComanda) {
+    const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
+
+    comandas.splice(comandaIndex, 1);
+
+    return comandas;
+}
+
+async function countTimeComanda(comandas, comandaIndex) {
+    setTimeout(() => {
+        comandas[comandaIndex].time = "yellow";
+        io.emit('comandas', comandas);
+
+        setTimeout(() => {
+            comandas[comandaIndex].time = "red";
+            io.emit('comandas', comandas);
+        }, 10000);
+    }, 10000);
 }
 
 /* --- CERRAR Socket.io --- */
@@ -132,19 +170,19 @@ app.post("/usuario", (req, res) => {
     res.json(user)
 })
 
-app.post("/loginUser", (req,res)=>{
+app.post("/loginUser", (req, res) => {
     const datos = req.body;
     console.log(datos);
     selectDBUserLogin(datos.usuario, datos.passwd)
-    .then((data)=>{
-        console.log(data);
-    if(data.length > 0){
-        res.json({autoritzacio: true})
-    }else{
-        res.json({autoritzacio: false})
-    }
-    })
-    
+        .then((data) => {
+            console.log(data);
+            if (data.length > 0) {
+                res.json({ autoritzacio: true })
+            } else {
+                res.json({ autoritzacio: false })
+            }
+        })
+
 })
 
 app.post("/miUsuario", (req, res) => {
@@ -155,58 +193,10 @@ app.post("/miUsuario", (req, res) => {
 
 /* --- GESTION DE COMANDAS --- */
 
-app.get("/getComandas", async (req, res) => {
-    const comandas = await selectComanda();
-    comandas.forEach(comanda => {
-        if (comanda.productos != null) {
-            var productos = comanda.productos.split(",");
-            comanda.productos = productos;
-        }
-
-
-    })
-    res.send(comandas);
-})
-
-app.post("/:updateState/:id", async (req, res) => {
-    const estado = req.params.updateState;
-    const id = req.params.id;
-    res.send(await updateStateDB(id, estado))
-})
-
 app.post("/createComanda", async (req, res) => {
     // let id_user = req.body.id;
     let id_user = 1;
     res.send({ id_comanda: await insertDBComanda(id_user) });
-})
-
-app.delete("/deleteComanda", async (req, res) => {
-    // let id_comanda = req.body.id;
-    let id_comanda = 1;
-
-    res.send({ message: deleteDBComanda(id_comanda) });
-})
-
-// app.post("/addProductCarrito", async (req, res) => {
-//     // let id_comanda = req.body.id_comanda;
-//     // let id_producto = req.body.id_producto;
-//     let id_comanda = 1;
-//     let id_producto = 2;
-//     insertDBProductCarrito(id_comanda, id_producto);
-// })
-
-app.post("/buyComanda", async (req, res) => {
-    // let id_comanda = req.body.id_comanda;
-    // let id_producto = req.body.id_producto;
-    let id_comanda = 1;
-    changeEstadoComanda(id_comanda, "Procesando");
-})
-
-app.post("/finishComanda", async (req, res) => {
-    // let id_comanda = req.body.id_comanda;
-    // let id_producto = req.body.id_producto;
-    let id_comanda = 1;
-    changeEstadoComanda(id_comanda, "Finished");
 })
 
 /* --- CERRAR GESTION DE COMANDAS --- */
@@ -316,14 +306,14 @@ function selectDBMiUsuario(email) {
     });
 }
 
-function selectDBUserLogin(user, passwd){
-    return new Promise((resolve, reject)=>{
+function selectDBUserLogin(user, passwd) {
+    return new Promise((resolve, reject) => {
         let con = conectDB();
         var sql = `SELECT * FROM Usuario WHERE usuario="${user}" and passwd="${passwd}"`
-        con.query(sql, function(err, result){
-            if(err){
+        con.query(sql, function (err, result) {
+            if (err) {
                 reject(err)
-            }else{
+            } else {
                 resolve(result);
                 disconnectDB(con);
             }
@@ -360,7 +350,7 @@ function insertDBComanda(id) {
     });
 }
 
-function deleteDBComanda(id) {
+function deleteComandaDB(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
         var sql = `DELETE FROM Comanda WHERE id = ${id}`;
@@ -375,19 +365,6 @@ function deleteDBComanda(id) {
         });
     });
 }
-
-// function insertDBProductCarrito(id_comanda, id_producto) {
-//     let con = conectDB();
-//     var sql = `INSERT INTO Contiene (id_producto, id_comanda) VALUES (${id_producto}, ${id_comanda});`;
-//     con.query(sql, function (err, result) {
-//         if (err) {
-//             console.log(err);
-//         } else {
-//             console.log(result);
-//         }
-//     });
-//     disconnectDB(con);
-// }
 
 function selectComanda() {
     return new Promise((resolve, reject) => {
