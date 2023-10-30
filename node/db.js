@@ -343,12 +343,21 @@ function insertDBComanda(id) {
             if (err) {
                 reject(err);
             } else {
-                var selectSql = `SELECT * FROM Comanda WHERE id = ${result.insertId}`;
+                var selectSql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT(P.nombre) AS productos, SUM(P.precio) AS importe_total
+                FROM (
+                    SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+                    FROM Comanda WHERE id = ${result.insertId}
+                ) AS C
+                LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
+                LEFT JOIN Productos AS P ON CO.id_producto = P.id
+                GROUP BY C.id_comanda, C.estado_comanda`;
+
                 con.query(selectSql, function (err, comandaResult) {
                     if (err) {
                         reject(err);
                     } else {
                         comandas.push(comandaResult[0]);
+                        console.log(comandas);
                         io.emit('comandas', comandas);
                         resolve(comandaResult[0].id);
                     }
