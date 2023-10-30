@@ -168,13 +168,12 @@ app.post("/loginUser", (req, res) => {
     const datos = req.body;
     selectDBUserLogin(datos.usuario, datos.passwd)
         .then((data) => {
+            let autorizar = false
             if (data.length > 0) {
-                res.json({ autoritzacio: true })
-            } else {
-                res.json({ autoritzacio: false })
+                autorizar = true
             }
+            res.json({ "autoritzacio": autorizar, "userID": data[0].id })
         })
-
 })
 
 app.post("/miUsuario", (req, res) => {
