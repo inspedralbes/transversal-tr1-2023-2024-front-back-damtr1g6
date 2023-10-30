@@ -8,12 +8,34 @@ export default {
         comandes: [],
         show: false,
         idMostrar: "",
+        color: 1
     }),
+    computed: {
+        cardStyle() {
+            // Define un objeto de estilo CSS dinámico basado en el valor de dato_entero
+            return {
+                backgroundColor: this.determineBackgroundColor(),
+            };
+        },
+    },
     methods: {
-        mostrar(id) {
+        mostrar(id){
             this.show = !this.show;
             this.idMostrar = id;
             console.log(this.idMostrar);
+        },
+        determineBackgroundColor() {
+            // Escribe una lógica para determinar el color de fondo en función de dato_entero
+            switch (this.color) {
+                case 1:
+                    return 'green'; // Ejemplo de color de fondo
+                case 2:
+                    return 'orange'; // Ejemplo de otro color de fondo
+                case 3:
+                    return 'red';
+                default:
+                    return 'white'; // Color de fondo predeterminado
+            }
         },
         changeState(id, state) {
             socket.emit('changeState', { id: id, state: state });
@@ -36,7 +58,7 @@ export default {
         <v-container>
             <v-row>
                 <v-col cols="6" v-for="comanda in this.comandes">
-                    <v-card>
+                    <v-card :style="cardStyle">
                         <v-card-title>
                             ID: {{ comanda.id_comanda }}
                         </v-card-title>
@@ -56,7 +78,7 @@ export default {
                                 <v-card-title v-if="comanda.productos != null">
                                     Productos: {{ comanda.productos.length }}
                                 </v-card-title>
-                                <v-card-text v-for="(producto, index) in comanda.productos">
+                                <v-card-text  v-for="(producto, index) in comanda.productos">
                                     {{ index + 1 }}. {{ producto }}
                                 </v-card-text>
                             </v-card>

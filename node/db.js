@@ -1,3 +1,4 @@
+const express = require('express');
 var mysql = require('mysql2');
 const fs = require('fs');
 const date = new Date();
@@ -20,7 +21,7 @@ const io = new Server(server, {
 const PORT = 3672;
 var cors = require('cors')
 
-app.use(cors())
+app.use(cors());
 app.use(bodyP.json());
 app.use(express.json());
 
@@ -112,8 +113,8 @@ app.post("/productoUpdate", (req, res) => {
 /* --- GESTION DE USUARIOS --- */
 
 app.post("/usuario", async (req, res) => {
-    // let email = req.body.email;
-    let email = "email@gmail.com";
+    let email = req.body.email;
+    //let email = "email@gmail.com";
     let myUser = await selectDBMiUsuario(email);
     res.send({ "id": myUser[0].id, "username": myUser[0].usuario, "email": myUser[0].email });
 })
@@ -131,6 +132,21 @@ app.post("/usuario", (req, res) => {
     res.json(user)
 })
 
+app.post("/loginUser", (req,res)=>{
+    const datos = req.body;
+    console.log(datos);
+    selectDBUserLogin(datos.usuario, datos.passwd)
+    .then((data)=>{
+        console.log(data);
+    if(data.length > 0){
+        res.json({autoritzacio: true})
+    }else{
+        res.json({autoritzacio: false})
+    }
+    })
+    
+})
+
 app.post("/miUsuario", (req, res) => {
     res.json(user)
 })
@@ -146,6 +162,7 @@ app.get("/getComandas", async (req, res) => {
             var productos = comanda.productos.split(",");
             comanda.productos = productos;
         }
+
 
     })
     res.send(comandas);
@@ -284,7 +301,6 @@ function deleteDBProductos(id) {
 
 function selectDBMiUsuario(email) {
     return new Promise((resolve, reject) => {
-        email = "email@gmail.com";
         let con = conectDB();
         var sql = `SELECT * FROM Usuario WHERE email = "${email}"`;
 
@@ -298,6 +314,21 @@ function selectDBMiUsuario(email) {
             }
         });
     });
+}
+
+function selectDBUserLogin(user, passwd){
+    return new Promise((resolve, reject)=>{
+        let con = conectDB();
+        var sql = `SELECT * FROM Usuario WHERE usuario="${user}" and passwd="${passwd}"`
+        con.query(sql, function(err, result){
+            if(err){
+                reject(err)
+            }else{
+                resolve(result);
+                disconnectDB(con);
+            }
+        })
+    })
 }
 
 function insertDBUsuario(email, usuario, rol, tarjeta, passwd) {
