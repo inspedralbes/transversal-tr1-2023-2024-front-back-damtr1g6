@@ -1,5 +1,5 @@
 <script setup>
-import { deleteProducte, updateProducte } from '@/communicationManager';
+import { deleteProducte, updateProducte } from '@/services/communicationManager';
 </script>
 
 <script>

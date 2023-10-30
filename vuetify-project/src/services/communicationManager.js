@@ -1,4 +1,4 @@
-import socket from '@/socket';
+import socket from '@/services/socket';
 
 export async function getProductes() {
     const response = await fetch('http://localhost:3672/productos');

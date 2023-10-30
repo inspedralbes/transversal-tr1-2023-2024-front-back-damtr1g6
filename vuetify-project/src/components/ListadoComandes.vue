@@ -1,6 +1,6 @@
 <script setup>
-import { getComandes } from '@/communicationManager';
-import socket from '@/socket';
+import { getComandes } from '@/services/communicationManager';
+import socket from '@/services/socket';
 </script>
 <script>
 export default {

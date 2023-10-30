@@ -1,6 +1,6 @@
 <script>
-import { getComandes } from '@/communicationManager';
-import socket from '@/socket';
+import { getComandes } from '@/services/communicationManager';
+import socket from '@/services/socket';
 
 export default {
     data: () => ({

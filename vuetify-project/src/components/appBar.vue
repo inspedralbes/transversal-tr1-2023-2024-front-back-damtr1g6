@@ -1,5 +1,5 @@
 <script setup>
-import { getProductes, addProducte, deleteProducte } from '@/communicationManager';
+import { getProductes, addProducte, deleteProducte } from '@/services/communicationManager';
 import Producto from "../components/Producto.vue";
 import ListadoComandes from "../components/ListadoComandes.vue";
 import ResumComandes from "../components/ResumComandes.vue"
@@ -58,7 +58,8 @@ export default {
 <template>
     <v-layout>
         <v-app-bar color="blue">
-            <v-img class="mx-2 ml-5" src="../assets/icon.png" max-height="65" max-width="65" contain @click="screen='main'" style=":hover"></v-img>
+            <v-img class="mx-2 ml-5" src="../assets/icon.png" max-height="65" max-width="65" contain
+                @click="screen = 'main'" style=":hover"></v-img>
             <v-spacer></v-spacer>
 
             <v-btn @click="screen = 'recepcionComandes'">Recepcio comandes</v-btn>
