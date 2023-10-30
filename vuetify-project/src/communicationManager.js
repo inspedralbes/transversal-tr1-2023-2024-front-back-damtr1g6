@@ -43,11 +43,3 @@ export async function deleteProducte(id) {
         { method: 'DELETE' })
         .then(response => response.json)
 }
-
-export async function updateState(id_comanda, estado) {
-    console.log("updateState::datos recibidos: ", id_comanda)
-    const response = await fetch(`http://localhost:3672/` + estado + `/` + id_comanda,
-        {
-            method: 'POST'
-        },)
-}

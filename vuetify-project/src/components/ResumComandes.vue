@@ -1,5 +1,5 @@
 <script>
-import { getComandes, updateState } from '@/communicationManager';
+import { getComandes } from '@/communicationManager';
 import socket from '@/socket';
 
 export default {
