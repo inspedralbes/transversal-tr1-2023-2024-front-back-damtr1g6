@@ -337,13 +337,22 @@ function insertDBUsuario(email, usuario, rol, tarjeta, passwd) {
 function insertDBComanda(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("Pendiente", ${id}, "No comments.")`;
+        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("RECIBIDA", ${id}, "No comments.")`;
 
         con.query(sql, function (err, result) {
             if (err) {
                 reject(err);
             } else {
-                resolve(result.insertId);
+                var selectSql = `SELECT * FROM Comanda WHERE id = ${result.insertId}`;
+                con.query(selectSql, function (err, comandaResult) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        comandas.push(comandaResult[0]);
+                        io.emit('comandas', comandas);
+                        resolve(comandaResult[0].id);
+                    }
+                });
             }
             disconnectDB(con);
         });

@@ -9,6 +9,5 @@ export const state = reactive({
 });
 
 socket.on('comandas', (...comandas) => {
-    console.log("comandas recibidas");
     state.comandas = comandas;
 });
