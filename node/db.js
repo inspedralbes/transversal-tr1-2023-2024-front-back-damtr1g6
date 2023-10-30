@@ -191,6 +191,12 @@ app.post("/createComanda", async (req, res) => {
     res.send({ id_comanda: await insertDBComanda(id_user) });
 })
 
+app.post("/insertProducte", async (req, res) => {
+    const producto = req.body;
+    await insertProductDBComanda(producto.idProducto, producto.cantidad, producto.idComanda);
+    res.json(producto)
+})
+
 /* --- CERRAR GESTION DE COMANDAS --- */
 
 server.listen(PORT, () => {
@@ -313,6 +319,20 @@ function insertDBUsuario(email, usuario, rol, tarjeta, passwd) {
         }
     });
     disconnectDB(con);
+}
+
+function insertProductDBComanda(idProducto, cantidad, idComanda) {
+    let con = conectDB();
+    var sql = `INSERT INTO Contiene(id_producto, cantidad, id_comanda) VALUES(${idProducto},${cantidad},${idComanda} )`;
+
+    con.query(sql, function (err, result) {
+        if (err) {
+            reject(err);
+        } else {
+            resolve(result)
+        }
+        disconnectDB(con);
+    });
 }
 
 function insertDBComanda(id) {
