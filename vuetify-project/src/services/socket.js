@@ -4,8 +4,7 @@ import { reactive } from "vue";
 export const socket = io.connect('http://localhost:3672');
 
 export const state = reactive({
-    connected: false,
-    comandas: [],
+    comandas: []
 });
 
 socket.on('comandas', (...comandas) => {

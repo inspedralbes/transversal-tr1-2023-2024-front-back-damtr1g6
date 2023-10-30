@@ -46,8 +46,6 @@ async function cargarComandas() {
 cargarComandas();
 
 io.on('connection', async (socket) => {
-    console.log('Usuario conectado');
-
     socket.on('getComandas', async (id) => {
         io.emit('comandas', comandas);
     });
@@ -109,7 +107,6 @@ async function countTimeComanda(comandas, comandaIndex) {
 /* --- GESTION DE PRODUCTOS --- */
 
 app.get("/productos", (req, res) => {
-    console.log("GET:: /productos");
     selectDBProductes()
         .then((data) => {
             res.json(data);
@@ -121,7 +118,6 @@ app.get("/productos", (req, res) => {
 
 app.post("/producto", (req, res) => {
     const producto = req.body;
-    console.log(producto);
     const nombre = producto.nombre
     const descripcion = producto.descripcion
     const precio = producto.precio
@@ -142,7 +138,6 @@ app.delete("/producto/:id", (req, res) => {
 
 app.post("/productoUpdate", (req, res) => {
     const producto = req.body;
-    console.log(producto);
     updateDBProducto(producto)
 })
 
@@ -158,7 +153,6 @@ app.post("/usuario", async (req, res) => {
 })
 
 app.post("/usuario", (req, res) => {
-    console.log("POST:: /Usuario");
     const user = req.body;
     const email = user.email
     const usuario = user.usuario
@@ -172,10 +166,8 @@ app.post("/usuario", (req, res) => {
 
 app.post("/loginUser", (req, res) => {
     const datos = req.body;
-    console.log(datos);
     selectDBUserLogin(datos.usuario, datos.passwd)
         .then((data) => {
-            console.log(data);
             if (data.length > 0) {
                 res.json({ autoritzacio: true })
             } else {
@@ -209,9 +201,7 @@ function conectDB() {
     let con = mysql.createConnection(dbConfig)
     con.connect(function (err) {
         if (err) {
-            console.log("No conexio");
-        } else {
-            console.log("Conectado");
+            console.log("Error en la conexio");
         }
     })
     return con
@@ -222,7 +212,6 @@ function disconnectDB(con) {
         if (err) {
             return console.log("error: " + err.message);
         }
-        console.log("Se cierra la coneccion.");
     })
 }
 
@@ -247,8 +236,6 @@ function insertDBProductos(nombre, descripcion, precio, imagen_url, stock, estad
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error insert producto");
-        } else {
-            console.log(result);
         }
     });
     disconnectDB(con);
@@ -268,8 +255,6 @@ function updateDBProducto(producto) {
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error delete producto");
-        } else {
-            console.log(result);
         }
     });
     disconnectDB(con);
@@ -282,8 +267,6 @@ function deleteDBProductos(id) {
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error delete producto");
-        } else {
-            console.log(result);
         }
     });
     disconnectDB(con);
@@ -327,8 +310,6 @@ function insertDBUsuario(email, usuario, rol, tarjeta, passwd) {
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error insert producto");
-        } else {
-            console.log(result);
         }
     });
     disconnectDB(con);
@@ -357,7 +338,6 @@ function insertDBComanda(id) {
                         reject(err);
                     } else {
                         comandas.push(comandaResult[0]);
-                        console.log(comandas);
                         io.emit('comandas', comandas);
                         resolve(comandaResult[0].id);
                     }
@@ -413,8 +393,6 @@ function updateStateDB(id, estado) {
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error update comanda");
-        } else {
-            console.log(result);
         }
     });
     disconnectDB(con);
