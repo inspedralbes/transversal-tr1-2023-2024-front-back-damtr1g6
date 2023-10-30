@@ -1,6 +1,8 @@
 var mysql = require('mysql2');
 const fs = require('fs');
 const date = new Date();
+const path = require('path');
+
 
 var express = require("express");
 var bodyP = require("body-parser");
@@ -18,6 +20,10 @@ const dbConfig = {
     password: "TR1Tienda",
     database: "a22jhepincre_PR1Tienda"
 };
+
+//const directoriInformacio = './informacio';
+const directoriInformacio = path.join(__dirname, 'informacio');
+
 
 app.get("/productos", (req, res) => {
     console.log("GET:: /productos");
@@ -237,3 +243,93 @@ function insertDBProductCarrito(id) {
     // });
     // disconnectDB(con);
 }
+
+async function getData() {
+    let con = conectDB();
+
+    try {
+        const [usuariosRows] = 'SELECT * FROM Usuario';
+        const [productosRows] = 'SELECT * FROM Productos';
+        const [comandaRows] = 'SELECT * FROM Comanda';
+        const [contieneRows] = 'SELECT * FROM Contiene';
+
+        const datos = {
+            Usuarios: usuariosRows,
+            Productos: productosRows,
+            Comanda: comandaRows,
+            Contiene: contieneRows
+        };
+
+        return datos;
+    } catch (error) {
+        console.error('Error al obtener los datos:', error);
+        throw error;
+    } finally {
+        disconnectDB(con);
+    }
+}
+
+
+
+
+getData()
+    .then((datos) => {
+
+        try {
+            if (!fs.existsSync(directoriInformacio)) {
+                fs.mkdirSync(directoriInformacio);
+            }
+            const nomArxiu = `${directoriInformacio}/dades${Date.now()}.json`;
+            const rutaArxiu = path.join(directoriInformacio, nomArxiu);
+            fs.writeFile(rutaArxiu, JSON.stringify(datos), (err) => {
+                if (err) {
+                    console.error('Error al guardar los datos:', err);
+                    // Maneja el error adecuadamente
+                } else {
+                    console.log('Datos guardados en', nomArxiu);
+                    // Envía una respuesta HTTP exitosa.
+                }
+            });
+        } catch (error) {
+            console.error('Error al crear directorio o escribir archivo:', error);
+        }
+        
+    })
+
+
+function allData() {
+   // let con = conectDB();
+
+    fs.readdir(directoriInformacio, (err, arxius) => {
+        if (err) {
+            console.error('Error al leer archivos:', err);
+            // res.sendStatus(500);
+            return;
+        }
+
+        let respostesJuntes = [];
+
+        //Lee cada archivo y agrega sus respuestas al array de respuestas consolidadas
+        arxius.forEach((arxiu) => {
+            if (arxiu.startsWith('respostes')) {
+                const contingut = fs.readFileSync(path.join(directoriInformacio, arxiu), 'utf-8');
+                const datos = JSON.parse(contingut);
+                respostesJuntes = respostesJuntes.concat(datos);
+
+                fs.unlinkSync(path.join(directoriInformacio, arxiu));
+            }
+        });
+
+        //Escribe todas las respuestas consolidadas en un archivo grande
+        fs.writeFile(nomArxiu, JSON.stringify(respostesJuntes), (err) => {
+            if (err) {
+                console.error('Error al consolidar respuestas:', err);
+            } else {
+                console.log('Respuestas consolidadas en respuestas_grandes.json');
+            }
+        });
+    });
+}
+
+
+
