@@ -14,6 +14,10 @@ export default {
         },
         deleteComanda(id) {
             socket.emit('deleteComanda', id);
+        },
+        mostrar(id) {
+            this.show = !this.show;
+            this.idMostrar = id;
         }
     },
     computed: {

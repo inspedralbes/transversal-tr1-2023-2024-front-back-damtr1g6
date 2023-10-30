@@ -13,7 +13,6 @@ export default {
         mostrar(id) {
             this.show = !this.show;
             this.idMostrar = id;
-            console.log(this.idMostrar);
         },
         changeState(id, state) {
             socket.emit('changeState', { id: id, state: state });
