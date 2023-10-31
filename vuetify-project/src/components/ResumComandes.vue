@@ -4,16 +4,11 @@ import { socket, state } from '@/services/socket';
 
 export default {
     data: () => ({
-        show: false,
-        idMostrar: "",
-        color: 1
+        show: false
     }),
     methods: {
         changeState(id, state) {
             socket.emit('changeState', { id: id, state: state });
-        },
-        deleteComanda(id) {
-            socket.emit('deleteComanda', id);
         },
         mostrar(id) {
             this.show = !this.show;
@@ -22,12 +17,12 @@ export default {
     },
     computed: {
         comandas() {
-            return state.comandas[0].filter(comanda => comanda.estado_comanda == "RECIBIDA");
+            return state.comandas[0].filter(comanda => comanda.estado_comanda == "PREPARADA");
         }
     },
     mounted() {
         socket.emit('getComandas', {});
-    }
+    },
 }
 </script>
 <template>
@@ -39,12 +34,10 @@ export default {
                         <v-card-title>
                             Comanda: {{ comanda.id_comanda }}
                         </v-card-title>
-                        <v-card-text v-if="comanda.importe_total != null">{{ comanda.importe_total }} $
-                        </v-card-text>
-                        <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
+                        <v-card-text v-if="comanda.importe_total != null"><b>{{ comanda.estado_comanda }}</b></v-card-text>
+
                         <v-card-actions>
-                            <v-btn @click="changeState(comanda.id_comanda, 'PROCESANDO')">ACEPTAR</v-btn>
-                            <v-btn @click="deleteComanda(comanda.id_comanda)">DENEGAR</v-btn>
+                            <v-btn @click="changeState(comanda.id_comanda, 'RECOGIDA')">RECOGER</v-btn>
                             <v-spacer></v-spacer>
                             <v-btn @click="mostrar(comanda.id_comanda)">DETAILS</v-btn>
                         </v-card-actions>

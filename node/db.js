@@ -1,12 +1,24 @@
+const express = require('express');
 var mysql = require('mysql2');
 const fs = require('fs');
 const date = new Date();
-
-var express = require("express");
 var bodyP = require("body-parser");
-var cors = require("cors");
-var app = express();
+
+const http = require('http');
+const path = require('path');
+const { Server } = require('socket.io');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
 const PORT = 3672;
+var cors = require('cors')
 
 app.use(cors());
 app.use(bodyP.json());
@@ -19,8 +31,82 @@ const dbConfig = {
     database: "a22jhepincre_PR1Tienda"
 };
 
+/* --- Socket.io --- */
+
+let comandas = [];
+
+async function cargarComandas() {
+    comandas = await selectComanda();
+
+    for (let i = 0; i < comandas.length; i++) {
+        comandas[i].time = "green";
+    }
+}
+
+cargarComandas();
+
+io.on('connection', async (socket) => {
+    socket.on('getComandas', async (id) => {
+        io.emit('comandas', comandas);
+    });
+
+    socket.on('changeState', async (comanda) => {
+        updateStateDB(comanda.id, comanda.state);
+        updateStateComandas(comandas, comanda.id, comanda.state);
+
+        io.emit('comandas', comandas);
+    });
+
+    socket.on('deleteComanda', async (id) => {
+        deleteComandaDB(id);
+        deleteComandaComandas(comandas, id);
+
+        io.emit('comandas', comandas);
+    });
+
+    socket.on('disconnect', () => {
+
+    });
+});
+
+function updateStateComandas(comandas, idComanda, nuevoEstado) {
+    const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
+
+    comandas[comandaIndex].estado_comanda = nuevoEstado;
+
+    if (nuevoEstado == "PROCESANDO") {
+        comandas[comandaIndex].time = "green";
+        countTimeComanda(comandas, comandaIndex);
+    }
+
+    return comandas;
+}
+
+function deleteComandaComandas(comandas, idComanda) {
+    const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
+
+    comandas.splice(comandaIndex, 1);
+
+    return comandas;
+}
+
+async function countTimeComanda(comandas, comandaIndex) {
+    setTimeout(() => {
+        comandas[comandaIndex].time = "yellow";
+        io.emit('comandas', comandas);
+
+        setTimeout(() => {
+            comandas[comandaIndex].time = "red";
+            io.emit('comandas', comandas);
+        }, 10000);
+    }, 10000);
+}
+
+/* --- CERRAR Socket.io --- */
+
+/* --- GESTION DE PRODUCTOS --- */
+
 app.get("/productos", (req, res) => {
-    console.log("GET:: /productos");
     selectDBProductes()
         .then((data) => {
             res.json(data);
@@ -32,7 +118,6 @@ app.get("/productos", (req, res) => {
 
 app.post("/producto", (req, res) => {
     const producto = req.body;
-    console.log(producto);
     const nombre = producto.nombre
     const descripcion = producto.descripcion
     const precio = producto.precio
@@ -53,19 +138,21 @@ app.delete("/producto/:id", (req, res) => {
 
 app.post("/productoUpdate", (req, res) => {
     const producto = req.body;
-    console.log(producto);
     updateDBProducto(producto)
 })
 
+/* --- CERRAR GESTION DE PRODUCTOS --- */
+
+/* --- GESTION DE USUARIOS --- */
+
 app.post("/usuario", async (req, res) => {
-    // let email = req.body.email;
-    let email = "email@gmail.com";
+    let email = req.body.email;
+    //let email = "email@gmail.com";
     let myUser = await selectDBMiUsuario(email);
     res.send({ "id": myUser[0].id, "username": myUser[0].usuario, "email": myUser[0].email });
 })
 
 app.post("/usuario", (req, res) => {
-    console.log("POST:: /Usuario");
     const user = req.body;
     const email = user.email
     const usuario = user.usuario
@@ -77,23 +164,45 @@ app.post("/usuario", (req, res) => {
     res.json(user)
 })
 
+app.post("/loginUser", (req, res) => {
+    const datos = req.body;
+    selectDBUserLogin(datos.usuario, datos.passwd)
+        .then((data) => {
+            let autorizar = false
+            if (data.length > 0) {
+                autorizar = true
+            }
+            res.json({ "autoritzacio": autorizar, "userID": data[0].id })
+        })
+})
+
 app.post("/miUsuario", (req, res) => {
     res.json(user)
 })
 
+/* --- CERRAR GESTION DE USUARIOS --- */
+
+/* --- GESTION DE COMANDAS --- */
+
 app.post("/createComanda", async (req, res) => {
-    // let id = req.body.id;
-    let id = 1;
-    insertDBComanda(id)
+    // let id_user = req.body.id;
+    let id_user = 1;
+    res.send({ id_comanda: await insertDBComanda(id_user) });
 })
 
-app.post("/addProductCarrito", async (req, res) => {
-    // let id = req.body.id;
-    let id = 1;
-    insertDBProductCarrito(id);
+app.post("/insertProducte", async (req, res) => {
+    const producto = req.body;
+    await insertProductDBComanda(producto.idProducto, producto.cantidad, producto.idComanda);
+    res.json(producto)
 })
 
-app.listen(PORT, () => {
+/* --- CERRAR GESTION DE COMANDAS --- */
+
+app.get("/api/images/:name", (req, res) => {
+    res.sendFile(path.resolve("./images/" + req.params.name));
+})
+
+server.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT)
 })
 
@@ -101,9 +210,7 @@ function conectDB() {
     let con = mysql.createConnection(dbConfig)
     con.connect(function (err) {
         if (err) {
-            console.log("No conexio");
-        } else {
-            console.log("Conectado");
+            console.log("Error en la conexio");
         }
     })
     return con
@@ -114,7 +221,6 @@ function disconnectDB(con) {
         if (err) {
             return console.log("error: " + err.message);
         }
-        console.log("Se cierra la coneccion.");
     })
 }
 
@@ -139,8 +245,6 @@ function insertDBProductos(nombre, descripcion, precio, imagen_url, stock, estad
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error insert producto");
-        } else {
-            console.log(result);
         }
     });
     disconnectDB(con);
@@ -160,8 +264,6 @@ function updateDBProducto(producto) {
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error delete producto");
-        } else {
-            console.log(result);
         }
     });
     disconnectDB(con);
@@ -174,8 +276,6 @@ function deleteDBProductos(id) {
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error delete producto");
-        } else {
-            console.log(result);
         }
     });
     disconnectDB(con);
@@ -183,7 +283,6 @@ function deleteDBProductos(id) {
 
 function selectDBMiUsuario(email) {
     return new Promise((resolve, reject) => {
-        email = "email@gmail.com";
         let con = conectDB();
         var sql = `SELECT * FROM Usuario WHERE email = "${email}"`;
 
@@ -199,41 +298,125 @@ function selectDBMiUsuario(email) {
     });
 }
 
+function selectDBUserLogin(user, passwd) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `SELECT * FROM Usuario WHERE usuario="${user}" and passwd="${passwd}"`
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(result);
+                disconnectDB(con);
+            }
+        })
+    })
+}
+
 function insertDBUsuario(email, usuario, rol, tarjeta, passwd) {
     let con = conectDB();
     var sql = "INSERT INTO Usuario (email, usuario, rol, tarjeta, passwd)VALUES ('" + email + "', '" + usuario + "', '" + rol + "', '" + tarjeta + "', '" + passwd + "');";
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error insert producto");
-        } else {
-            console.log(result);
         }
     });
     disconnectDB(con);
+}
+
+function insertProductDBComanda(idProducto, cantidad, idComanda) {
+    let con = conectDB();
+    var sql = `INSERT INTO Contiene(id_producto, cantidad, id_comanda) VALUES(${idProducto},${cantidad},${idComanda} )`;
+
+    con.query(sql, function (err, result) {
+        if (err) {
+            reject(err);
+        } else {
+            resolve(result)
+        }
+        disconnectDB(con);
+    });
 }
 
 function insertDBComanda(id) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("RECIBIDA", ${id}, "No comments.")`;
+
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                var selectSql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT(P.nombre) AS productos, SUM(P.precio) AS importe_total
+                FROM (
+                    SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+                    FROM Comanda WHERE id = ${result.insertId}
+                ) AS C
+                LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
+                LEFT JOIN Productos AS P ON CO.id_producto = P.id
+                GROUP BY C.id_comanda, C.estado_comanda`;
+
+                con.query(selectSql, function (err, comandaResult) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        comandas.push(comandaResult[0]);
+                        io.emit('comandas', comandas);
+                        resolve(comandaResult[0].id);
+                    }
+                });
+            }
+            disconnectDB(con);
+        });
+    });
+}
+
+function deleteComandaDB(id) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `DELETE FROM Comanda WHERE id = ${id}`;
+
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve("Deleted: " + result);
+            }
+            disconnectDB(con);
+        });
+    });
+}
+
+function selectComanda() {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT(P.nombre) AS productos, SUM(P.precio) AS importe_total
+        FROM (
+            SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+            FROM Comanda
+        ) AS C
+        LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
+        LEFT JOIN Productos AS P ON CO.id_producto = P.id
+        GROUP BY C.id_comanda, C.estado_comanda;        
+        `;
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+        disconnectDB(con);
+    });
+}
+
+function updateStateDB(id, estado) {
     let con = conectDB();
-    var sql = `INSERT INTO Comanda(estado, id_user, comentarios)values("Pending", ${id}, "No comments.")`;
+    var sql = "UPDATE Comanda SET estado='" + estado + "' WHERE id=" + id;
     con.query(sql, function (err, result) {
         if (err) {
-            console.log(err);
-        } else {
-            console.log(result);
+            console.log("error update comanda");
         }
     });
     disconnectDB(con);
-}
-
-function insertDBProductCarrito(id) {
-    // let con = conectDB();
-    // var sql = `INSERT INTO Comanda(estado, id_user, comentarios)values("Pending", ${id}, "No comments.")`;
-    // con.query(sql, function (err, result) {
-    //     if (err) {
-    //         console.log(err);
-    //     } else {
-    //         console.log(result);
-    //     }
-    // });
-    // disconnectDB(con);
 }

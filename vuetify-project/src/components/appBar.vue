@@ -1,7 +1,9 @@
 <script setup>
-import { getProductes, addProducte, deleteProducte } from '@/communicationManager';
+import { getProductes, addProducte, deleteProducte } from '@/services/communicationManager';
+import { socket } from '@/services/socket';
 import Producto from "../components/Producto.vue";
 import ListadoComandes from "../components/ListadoComandes.vue";
+import ResumComandes from "../components/ResumComandes.vue"
 import RecepcioComandes from "../components/RecepcioComandes.vue"
 </script>
 
@@ -19,9 +21,12 @@ export default {
         },
         comandes: [],
         dialog: false,
-        show: false
+        show: false,
+        screen: "main",
     }),
     mounted() {
+        socket.emit('getComandas', {});
+
         getProductes()
             .then((data) => {
                 this.productos = data;
@@ -56,13 +61,17 @@ export default {
 <template>
     <v-layout>
         <v-app-bar color="blue">
-            <v-img class="mx-2 ml-5" src="../assets/icon.png" max-height="65" max-width="65" contain></v-img>
+            <v-img class="mx-2 ml-5" src="../assets/icon.png" max-height="65" max-width="65" contain
+                @click="screen = 'main'" style=":hover"></v-img>
             <v-spacer></v-spacer>
 
+            <v-btn @click="screen = 'recepcionComandes'">Recepcio comandes</v-btn>
+            <v-btn @click="screen = 'listadoComandes'">Llistat comandes</v-btn>
+            <v-btn @click="screen = 'resumComandes'">Resum comandes</v-btn>
             <v-img class="mx-2 mr-10" src="../assets/user.png" max-height="40" max-width="40" contain></v-img>
         </v-app-bar>
 
-        <v-main class="box-productos">
+        <v-main class="box-productos" v-if="screen === 'main'">
             <v-container>
                 <v-form class="box-write">
                     <v-container>
@@ -161,11 +170,12 @@ export default {
                 </v-row>
             </v-container>
         </v-main>
+        <RecepcioComandes v-if="screen === 'recepcionComandes'" />
+        <ListadoComandes v-if="screen === 'listadoComandes'" />
 
-        <ListadoComandes v-if="false"/>
+        <ResumComandes v-if="screen === 'resumComandes'" />
 
-        <RecepcioComandes  v-if="false" />
-        
+
 
     </v-layout>
 </template>
