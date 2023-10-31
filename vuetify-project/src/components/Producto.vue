@@ -9,6 +9,7 @@ export default {
     data: () => ({
         modal: false,
         dialog: false,
+        imageUrl: "",
     }),
     methods: {
         changeState(id) {
@@ -25,15 +26,15 @@ export default {
     },
 
     mounted() {
-
+        console.log(this.producto);
+        this.imageUrl = "http://localhost:3672/api/images/" + this.producto.imagen_url;
     }
 }
 </script>
 
 <template>
     <v-card style="height: 510px">
-        <v-img src="https://img.freepik.com/fotos-premium/3d-burger-sandwich-for-social-media-post-7_351245-1478.jpg"
-            height="380px" alter="no encontrado" cover></v-img>
+        <v-img :src="imageUrl" height="380px" alter="no encontrado" cover></v-img>
 
         <v-card-title>
             {{ producto.nombre }}
