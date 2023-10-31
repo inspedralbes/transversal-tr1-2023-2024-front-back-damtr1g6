@@ -44,7 +44,7 @@ export default {
                     </v-card>
                     <v-expand-transition>
 
-                        <div v-if="show === true">
+                        <div v-if="show === true && idMostrar == comanda.id_comanda">
                             <v-card>
                                 <v-card-title v-if="comanda.productos = ! null">
                                     Productos: {{ comanda.productos.length }}
