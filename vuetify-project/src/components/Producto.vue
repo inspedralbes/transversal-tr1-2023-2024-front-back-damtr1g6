@@ -6,16 +6,12 @@ import { deleteProducte, updateProducte } from '@/services/communicationManager'
 <script>
 
 export default {
-    props: ["producto", "callGetProductes"],
+    props: ["producto", "callGetProductes", "imageName"],
     data: () => ({
         modal: false,
         dialog: false,
-        imageUrl: "",
     }),
     methods: {
-        changeState(id) {
-
-        },
         async deleteP(id) {
             await deleteProducte(id);
             this.callGetProductes();
@@ -25,16 +21,12 @@ export default {
             this.callGetProductes();
         }
     },
-
-    mounted() {
-        this.imageUrl = "http://localhost:3672/api/images/" + this.producto.imagen_url;
-    }
 }
 </script>
 
 <template>
     <v-card style="height: 510px">
-        <v-img :src="imageUrl" height="380px" alter="no encontrado" cover></v-img>
+        <v-img :src="imageName" height="380px" alter="no encontrado" cover></v-img>
 
         <v-card-title>
             {{ producto.nombre }}

@@ -60,11 +60,15 @@ export default {
                 })
         },
         search() {
+            this.searchProduct = {};
             if (this.buscar == "") {
                 this.searchProduct = this.productos;
             } else {
                 this.searchProduct = this.productos.filter(producto => producto.nombre.toLowerCase().includes(this.buscar.toLowerCase()));
             }
+        },
+        getImageName(img) {
+            return "http://localhost:3672/api/images/" + img;
         }
     }
 }
@@ -133,10 +137,10 @@ export default {
                                                                             required></v-text-field>
                                                                     </v-col>
                                                                     <v-col cols="12" sm="4">
-                                                                         <v-text-field label="Imagen*"
+                                                                        <v-text-field label="Imagen*"
                                                                             v-model="producto.imagen_url"
-                                                                             required></v-text-field> 
-                                                                            
+                                                                            required></v-text-field>
+
                                                                     </v-col>
                                                                     <v-col cols="12" sm="4">
                                                                         <v-text-field label="Stock*"
@@ -163,7 +167,7 @@ export default {
                                                                 Save
                                                             </v-btn>
                                                         </v-card-actions>
-                                            
+
                                                     </v-card>
                                                 </v-dialog>
                                             </template>
@@ -177,8 +181,10 @@ export default {
                 </v-form>
                 <!-- all products -->
                 <v-row>
-                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-for="producto in this.searchProduct">
-                        <Producto :producto="producto" :callGetProductes="callGetProductes" />
+                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
+                        v-for="producto in this.searchProduct">
+                        <Producto :producto="producto" :callGetProductes="callGetProductes"
+                            :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
                 </v-row>
             </v-container>
