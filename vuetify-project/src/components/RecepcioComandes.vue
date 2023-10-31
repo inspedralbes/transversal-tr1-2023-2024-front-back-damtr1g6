@@ -23,10 +23,12 @@ export default {
     computed: {
         comandas() {
             return state.comandas[0].filter(comanda => comanda.estado_comanda == "RECIBIDA");
+            
         }
     },
     mounted() {
         socket.emit('getComandas', {});
+        console.log(state.comandas[0]);
     }
 }
 </script>
@@ -34,11 +36,12 @@ export default {
     <v-main class="box-recepcio-comandes">
         <v-container>
             <v-row>
-                <v-col cols="6" v-for="comanda in comandas">
+                <v-col cols="3" v-for="comanda in comandas">
                     <v-card>
                         <v-card-title>
-                            Comanda: {{ comanda.id_comanda }}
+                            Tastybyte
                         </v-card-title>
+                        <v-card-text>Comanda: {{ comanda.id_comanda }}</v-card-text>
                         <v-card-text v-if="comanda.importe_total != null">{{ comanda.importe_total }} $
                         </v-card-text>
                         <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
@@ -53,7 +56,7 @@ export default {
 
                         <div v-if="show === true && idMostrar == comanda.id_comanda">
                             <v-card>
-                                <v-card-title v-if="comanda.productos = ! null">
+                                <v-card-title v-if="comanda.productos != null">
                                     Productos: {{ comanda.productos.length }}
                                 </v-card-title>
                                 <v-card-text v-for="(producto, index) in comanda.productos">

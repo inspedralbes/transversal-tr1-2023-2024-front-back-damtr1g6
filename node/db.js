@@ -37,6 +37,13 @@ let comandas = [];
 
 async function cargarComandas() {
     comandas = await selectComanda();
+    comandas.forEach(comanda => {
+        if (comanda.productos != null) {
+            var productos = comanda.productos.split(",");
+            comanda.productos = productos;
+        }
+
+    })
 
     for (let i = 0; i < comandas.length; i++) {
         comandas[i].time = "green";
