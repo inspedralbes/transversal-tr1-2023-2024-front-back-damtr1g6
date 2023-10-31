@@ -47,10 +47,10 @@ export default {
         <v-card-actions icon>
             <v-card-text>{{ producto.precio }}</v-card-text>
             <v-spacer></v-spacer>
-            <v-btn color="orange-lighten-2" variant="text" @click="deleteP(producto.id)">DELETE</v-btn>
+            <v-btn color="blue" variant="text" icon="mdi-delete-outline" @click="deleteP(producto.id)"></v-btn>
             <v-dialog v-model="dialog" persistent width="1024">
                 <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" class="ma-2" color="purple" icon="mdi-wrench">
+                    <v-btn v-bind="props" class="ma-2" color="blue" icon="mdi-wrench">
 
                     </v-btn>
                 </template>
