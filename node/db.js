@@ -198,6 +198,10 @@ app.post("/insertProducte", async (req, res) => {
 
 /* --- CERRAR GESTION DE COMANDAS --- */
 
+app.get("/api/images/:name", (req, res) => {
+    res.sendFile(path.resolve("./images/" + req.params.name));
+})
+
 server.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT)
 })
