@@ -27,7 +27,6 @@ export default {
     },
 
     mounted() {
-        console.log(this.producto);
         this.imageUrl = "http://localhost:3672/api/images/" + this.producto.imagen_url;
     }
 }
