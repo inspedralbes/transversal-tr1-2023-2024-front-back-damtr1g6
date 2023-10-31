@@ -1,7 +1,9 @@
-var mysql = require('mysql2');
+//var mysql = require('mysql2');
 const fs = require('fs');
 const date = new Date();
 const path = require('path');
+const mysql = require('mysql2/promise');
+
 
 
 var express = require("express");
@@ -244,14 +246,18 @@ function insertDBProductCarrito(id) {
     // disconnectDB(con);
 }
 
+const rutaArxiu = path.join(__dirname, 'informacio');;
+const nomArxiu = `${rutaArxiu}/dades.json`;
+
 async function getData() {
-    let con = conectDB();
 
     try {
-        const [usuariosRows] = 'SELECT * FROM Usuario';
-        const [productosRows] = 'SELECT * FROM Productos';
-        const [comandaRows] = 'SELECT * FROM Comanda';
-        const [contieneRows] = 'SELECT * FROM Contiene';
+        const con = await mysql.createConnection(dbConfig);
+
+        const [usuariosRows] = await con.query('SELECT * FROM Usuario');
+        const [productosRows] = await con.query('SELECT * FROM Productos');
+        const [comandaRows] = await con.query('SELECT * FROM Comanda');
+        const [contieneRows] = await con.query('SELECT * FROM Contiene');
 
         const datos = {
             Usuarios: usuariosRows,
@@ -260,76 +266,57 @@ async function getData() {
             Contiene: contieneRows
         };
 
-        return datos;
+        if (!fs.existsSync(rutaArxiu)) {
+            fs.mkdirSync(rutaArxiu);
+        }
+       
+        fs.writeFile(nomArxiu, JSON.stringify(datos), (err) => {
+            if (err) {
+                console.error('Error al guardar los datos:', err);
+            } else {
+                console.log('Datos guardados en', nomArxiu);
+            }
+        });
+
+        await con.end(); // Cierra la conexión a la base de datos
+
     } catch (error) {
         console.error('Error al obtener los datos:', error);
         throw error;
-    } finally {
-        disconnectDB(con);
     }
 }
 
+//Cada 1 min, llama a la función, para mantener actualizado el json
+const interval = 60 * 1000;
+setInterval(getData, interval);
+
+getData();
 
 
+//Esta función lo que hace es revisar si hay cambios en la bbdd y lo actualiza en el json
+async function vigilanteBaseDatos() {
+    const con =await mysql.createConnection(dbConfig);
 
-getData()
-    .then((datos) => {
-
-        try {
-            if (!fs.existsSync(directoriInformacio)) {
-                fs.mkdirSync(directoriInformacio);
-            }
-            const nomArxiu = `${directoriInformacio}/dades${Date.now()}.json`;
-            const rutaArxiu = path.join(directoriInformacio, nomArxiu);
-            fs.writeFile(rutaArxiu, JSON.stringify(datos), (err) => {
-                if (err) {
-                    console.error('Error al guardar los datos:', err);
-                    // Maneja el error adecuadamente
-                } else {
-                    console.log('Datos guardados en', nomArxiu);
-                    // Envía una respuesta HTTP exitosa.
-                }
-            });
-        } catch (error) {
-            console.error('Error al crear directorio o escribir archivo:', error);
-        }
-        
-    })
-
-
-function allData() {
-   // let con = conectDB();
-
-    fs.readdir(directoriInformacio, (err, arxius) => {
+    con.connect((err) => {
         if (err) {
-            console.error('Error al leer archivos:', err);
-            // res.sendStatus(500);
-            return;
+          console.error('Error al conectar a la base de datos:', err);
+          return;
         }
-
-        let respostesJuntes = [];
-
-        //Lee cada archivo y agrega sus respuestas al array de respuestas consolidadas
-        arxius.forEach((arxiu) => {
-            if (arxiu.startsWith('respostes')) {
-                const contingut = fs.readFileSync(path.join(directoriInformacio, arxiu), 'utf-8');
-                const datos = JSON.parse(contingut);
-                respostesJuntes = respostesJuntes.concat(datos);
-
-                fs.unlinkSync(path.join(directoriInformacio, arxiu));
-            }
+    
+        con.query('SELECT 1', (err) => {
+          if (err) {
+            console.error('Error al hacer una consulta a la base de datos:', err);
+            return;
+          }
+    
+          //"Salta la alarma" volvemos a cargar la base de datos
+          con.on('change', (table, changes) => {
+            getData();
+          });
         });
-
-        //Escribe todas las respuestas consolidadas en un archivo grande
-        fs.writeFile(nomArxiu, JSON.stringify(respostesJuntes), (err) => {
-            if (err) {
-                console.error('Error al consolidar respuestas:', err);
-            } else {
-                console.log('Respuestas consolidadas en respuestas_grandes.json');
-            }
-        });
-    });
+      });
 }
 
+vigilanteBaseDatos();
 
 
