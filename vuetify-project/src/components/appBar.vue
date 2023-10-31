@@ -11,6 +11,7 @@ import RecepcioComandes from "../components/RecepcioComandes.vue"
 export default {
     data: () => ({
         productos: [],
+        searchProduct: [],
         producto: {
             "nombre": "",
             "descripcion": "",
@@ -23,6 +24,7 @@ export default {
         dialog: false,
         show: false,
         screen: "main",
+        buscar: ""
     }),
     mounted() {
         socket.emit('getComandas', {});
@@ -30,6 +32,7 @@ export default {
         getProductes()
             .then((data) => {
                 this.productos = data;
+                this.searchProduct = data;
             })
     },
     methods: {
@@ -38,6 +41,7 @@ export default {
             getProductes()
                 .then((data) => {
                     this.productos = data;
+                    this.searchProduct = data;
                 })
         },
         async deleteP(id) {
@@ -45,13 +49,22 @@ export default {
             getProductes()
                 .then((data) => {
                     this.productos = data;
+                    this.searchProduct = data;
                 })
         },
         async callGetProductes() {
             getProductes()
                 .then((data) => {
                     this.productos = data;
+                    this.searchProduct = data;
                 })
+        },
+        search() {
+            if (this.buscar == "") {
+                this.searchProduct = this.productos;
+            } else {
+                this.searchProduct = this.productos.filter(producto => producto.nombre.toLowerCase().includes(this.buscar.toLowerCase()));
+            }
         }
     }
 }
@@ -78,19 +91,19 @@ export default {
                         <v-row>
                             <!-- El largo de la barra de busqueda -->
                             <v-col cols="12">
-                                <v-text-field v-model="buscar" clearable label="Producte" type="text" variant="outlined">
+                                <v-text-field v-model="buscar" clearable label="Producte" type="text" variant="outlined"
+                                    @input="search()">
                                     <template v-slot:append>
                                         <v-menu>
                                             <template v-slot:activator="{ props }">
                                                 <v-btn icon>
-                                                    <v-icon>mdi-magnify</v-icon>
+                                                    <v-icon @click="search()">mdi-magnify</v-icon>
                                                 </v-btn>
 
                                                 <!-- Add product icon -->
                                                 <v-dialog v-model="dialog" persistent width="1024">
                                                     <template v-slot:activator="{ props }">
-                                                        <v-btn v-bind="props" class="ma-2" color="indigo"
-                                                            icon="mdi-cloud-upload">
+                                                        <v-btn v-bind="props" class="ma-2" color="indigo" icon="mdi-plus">
 
                                                         </v-btn>
                                                     </template>
@@ -162,7 +175,7 @@ export default {
                 </v-form>
                 <!-- all products -->
                 <v-row>
-                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-for="producto in this.productos">
+                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-for="producto in this.searchProduct">
                         <Producto :producto="producto" :callGetProductes="callGetProductes" />
                     </v-col>
                 </v-row>
