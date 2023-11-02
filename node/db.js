@@ -230,21 +230,14 @@ app.post("/createComanda", async (req, res) => {
 
 app.post("/insertProducte", async (req, res) => {
     const producto = req.body;
+    console.log(producto);
     await insertProductDBComanda(producto.idProducto, producto.cantidad, producto.idComanda);
+
+    var productoEliminarStock = await selectDBProducteID(producto.idProducto);
+    productoEliminarStock[0].stock -= producto.cantidad
+    updateDBProducto(productoEliminarStock[0]);
+
     res.json(producto)
-})
-
-app.post("/eliminarStock", async (req, res) => {
-    const comanda = await selectComandaCantidad(req.body.id)
-    console.log(comanda);
-    var productoCantidad = comanda[0].productos.split(",")
-    console.log(productoCantidad);
-    var cantidad = []
-    productoCantidad.forEach(p => {
-        cantidad.push(p.split("-"))
-    });
-
-    console.log(cantidad);
 })
 /* --- CERRAR GESTION DE COMANDAS --- */
 
@@ -293,6 +286,20 @@ function disconnectDB(con) {
     })
 }
 
+function selectDBProducteID(id) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = "SELECT * FROM Productos WHERE id=" + id;
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+        disconnectDB(con);
+    });
+}
 function selectDBProductes() {
     return new Promise((resolve, reject) => {
         let con = conectDB();
@@ -320,6 +327,7 @@ function insertDBProductos(nombre, descripcion, precio, imagen_url, stock, estad
 }
 
 function updateDBProducto(producto) {
+    console.log(producto);
     const id = producto.id
     const nombre = producto.nombre
     const descripcion = producto.descripcion
@@ -332,7 +340,7 @@ function updateDBProducto(producto) {
     var sql = "UPDATE Productos SET nombre='" + nombre + "', descripcion='" + descripcion + "', precio=" + precio + ", imagen_url='" + imagen_url + "', stock=" + stock + ", estado='" + estado + "' WHERE id=" + id;
     con.query(sql, function (err, result) {
         if (err) {
-            console.log("error delete producto");
+            console.log("error update producto." + err);
         }
     });
     disconnectDB(con);
@@ -403,9 +411,9 @@ function insertProductDBComanda(idProducto, cantidad, idComanda) {
 
     con.query(sql, function (err, result) {
         if (err) {
-            reject(err);
+            console.log(err);
         } else {
-            resolve(result)
+            console.log(result)
         }
         disconnectDB(con);
     });

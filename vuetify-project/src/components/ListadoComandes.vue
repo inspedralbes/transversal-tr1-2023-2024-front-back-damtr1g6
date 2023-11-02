@@ -49,7 +49,7 @@ export default {
                         </v-card-text>
                         <v-card-text v-if="comanda.importe_total != null">
                             <v-row>
-                                <v-col>{{ comanda.importe_total }} €</v-col>
+                                <v-col>Total: {{ comanda.importe_total }} €</v-col>
                             </v-row>
                         </v-card-text>
                         <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
