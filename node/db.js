@@ -20,6 +20,7 @@ const io = new Server(server, {
 
 const PORT = 3672;
 var cors = require('cors');
+const { rejects } = require('assert');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -67,9 +68,8 @@ async function cargarComandas() {
                 }
                 res.push(pr)
             });
-            
+
             comanda.productos = res;
-            console.log(comanda.productos);
         }
 
     })
@@ -232,6 +232,18 @@ app.post("/insertProducte", async (req, res) => {
     res.json(producto)
 })
 
+app.post("/eliminarStock", async (req, res)=>{
+    const comanda = await selectComandaCantidad(req.body.id)
+    console.log(comanda);
+    var productoCantidad = comanda[0].productos.split(",")
+    console.log(productoCantidad);
+    var cantidad = []
+    productoCantidad.forEach(p => {
+        cantidad.push(p.split("-"))
+    });
+    
+    console.log(cantidad);
+})
 /* --- CERRAR GESTION DE COMANDAS --- */
 
 /* --- GESTION DE IMAGENES --- */
@@ -465,6 +477,28 @@ function selectComanda() {
     });
 }
 
+function selectComandaCantidad(id) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `SELECT C.id_comanda,GROUP_CONCAT(P.id, "-",CO.cantidad) AS productos
+    FROM (
+        SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+        FROM Comanda
+    ) AS C
+    LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
+    LEFT JOIN Productos AS P ON CO.id_producto = P.id
+    WHERE C.id_comanda=${id}
+    GROUP BY C.id_comanda, C.estado_comanda;`
+        con.query(sql, function (err, result) {
+            if(err){
+                reject(err);
+            }else{
+                resolve(result);
+            }
+        })
+    })
+
+}
 function updateStateDB(id, estado) {
     let con = conectDB();
     var sql = "UPDATE Comanda SET estado='" + estado + "' WHERE id=" + id;

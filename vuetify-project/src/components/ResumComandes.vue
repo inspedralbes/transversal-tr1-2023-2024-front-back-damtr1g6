@@ -9,6 +9,7 @@ export default {
     methods: {
         changeState(id, state) {
             socket.emit('changeState', { id: id, state: state });
+            
         },
         mostrar(id) {
             this.show = !this.show;
@@ -36,7 +37,7 @@ export default {
                         </v-card-title>
                         <v-card-text v-if="comanda.importe_total != null"><b>{{ comanda.estado_comanda }}</b></v-card-text>
                         <v-card-actions>
-                            <v-btn @click="changeState(comanda.id_comanda, 'RECOGIDA')">RECOGER</v-btn>
+                            <v-btn @click="changeState(comanda.id_comanda, 'Recogida')">RECOGER</v-btn>
                             <v-spacer></v-spacer>
                             <v-btn @click="mostrar(comanda.id_comanda)">DETAILS</v-btn>
                         </v-card-actions>
