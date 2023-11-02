@@ -55,12 +55,12 @@ export default {
         async callGetProductes() {
             getProductes()
                 .then((data) => {
-                    console.log(data);
                     this.productos = data;
                     this.searchProduct = data;
                 })
         },
         search() {
+            console.log("hola");
             this.searchProduct = {};
             if (this.buscar == "") {
                 this.searchProduct = this.productos;
@@ -94,25 +94,17 @@ export default {
                 <v-form class="box-write">
                     <v-container>
                         <v-row>
-                            <!-- El largo de la barra de busqueda -->
                             <v-col cols="12">
-                                <v-text-field v-model="buscar" clearable label="Producte" type="text" variant="outlined"
+                                <v-text-field v-model="buscar" label="Producte" type="text" variant="outlined"
                                     @input="search()">
                                     <template v-slot:append>
                                         <v-menu>
                                             <template v-slot:activator="{ props }">
-                                                <v-btn icon>
-                                                    <v-icon @click="search()">mdi-magnify</v-icon>
-                                                </v-btn>
-
-                                                <!-- Add product icon -->
                                                 <v-dialog v-model="dialog" persistent width="1024">
                                                     <template v-slot:activator="{ props }">
-                                                        <v-btn v-bind="props" class="ma-2" color="indigo" icon="mdi-plus">
-
-                                                        </v-btn>
+                                                        <v-btn v-bind="props" class="ma-2" color="indigo"
+                                                            icon="mdi-plus"></v-btn>
                                                     </template>
-                                                    <!-- Modal add -->
                                                     <v-card>
                                                         <v-card-title>
                                                             <span class="text-h5">Producto</span>
@@ -168,19 +160,16 @@ export default {
                                                                 Save
                                                             </v-btn>
                                                         </v-card-actions>
-
                                                     </v-card>
                                                 </v-dialog>
                                             </template>
                                         </v-menu>
                                     </template>
-
                                 </v-text-field>
                             </v-col>
                         </v-row>
                     </v-container>
                 </v-form>
-                <!-- all products -->
                 <v-row>
                     <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
                         v-for="producto in this.searchProduct">
@@ -192,11 +181,7 @@ export default {
         </v-main>
         <RecepcioComandes v-if="screen === 'recepcionComandes'" />
         <ListadoComandes v-if="screen === 'listadoComandes'" />
-
         <ResumComandes v-if="screen === 'resumComandes'" />
-
-
-
     </v-layout>
 </template>
 
