@@ -17,7 +17,7 @@ export default {
     },
     computed: {
         comandas() {
-            return state.comandas[0].filter(comanda => comanda.estado_comanda == "PREPARADA");
+            return state.comandas[0].filter(comanda => comanda.estado_comanda == "Preparada");
         }
     },
     mounted() {
@@ -29,13 +29,12 @@ export default {
     <v-main class="box-recepcio-comandes">
         <v-container>
             <v-row>
-                <v-col cols="6" v-for="comanda in comandas">
+                <v-col cols="3" v-for="comanda in comandas">
                     <v-card>
                         <v-card-title>
                             Comanda: {{ comanda.id_comanda }}
                         </v-card-title>
                         <v-card-text v-if="comanda.importe_total != null"><b>{{ comanda.estado_comanda }}</b></v-card-text>
-
                         <v-card-actions>
                             <v-btn @click="changeState(comanda.id_comanda, 'RECOGIDA')">RECOGER</v-btn>
                             <v-spacer></v-spacer>

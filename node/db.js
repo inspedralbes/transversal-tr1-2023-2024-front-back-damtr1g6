@@ -40,7 +40,21 @@ async function cargarComandas() {
     comandas.forEach(comanda => {
         if (comanda.productos != null) {
             var productos = comanda.productos.split(",");
-            comanda.productos = productos;
+            var productosPrecio = []
+            productos.forEach(producto => {
+                productosPrecio.push(producto.split("-"));
+            });
+            var res = []
+            productosPrecio.forEach(p => {
+                var pr = {
+                    nombre: p[0],
+                    precio: p[1]
+                }
+                res.push(pr)
+            });
+            
+            comanda.productos = res;
+            console.log(comanda.productos);
         }
 
     })
@@ -397,14 +411,14 @@ function deleteComandaDB(id) {
 function selectComanda() {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT(P.nombre) AS productos, SUM(P.precio) AS importe_total
+        var sql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT("(",CO.cantidad , ")",P.nombre, "-",P.precio) AS productos, SUM(P.precio*CO.cantidad) AS importe_total, SUM(CO.cantidad) AS productos_total
         FROM (
             SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
             FROM Comanda
         ) AS C
         LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
         LEFT JOIN Productos AS P ON CO.id_producto = P.id
-        GROUP BY C.id_comanda, C.estado_comanda;        
+        GROUP BY C.id_comanda, C.estado_comanda;           
         `;
         con.query(sql, function (err, result) {
             if (err) {
