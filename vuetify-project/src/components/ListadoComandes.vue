@@ -32,24 +32,24 @@ export default {
                             ID: {{ comanda.id_comanda }}
                         </v-card-title>
                         <v-card-title>
-                                    Productos: {{ comanda.productos_total}}
-                                </v-card-title>
-                                <v-card-text>
-                                    <v-row>
-                                        <v-col cols="10">Nombre</v-col>
-                                        <v-col cols="2">Preu</v-col>
-                                    </v-row>
-                                </v-card-text>
-                                <v-card-text v-for="(producto, index) in comanda.productos">
-                                    <v-row>
-                                        <v-col cols="10">{{ producto.nombre }}  </v-col>
-                                        <v-col cols="2">{{ producto.precio }}</v-col>
-                                    </v-row>
-                                                             
-                                </v-card-text>
+                            Productes: {{ comanda.productos_total }}
+                        </v-card-title>
+                        <v-card-text>
+                            <v-row>
+                                <v-col cols="10">Nom</v-col>
+                                <v-col cols="2">Preu</v-col>
+                            </v-row>
+                        </v-card-text>
+                        <v-card-text v-for="(producto, index) in comanda.productos">
+                            <v-row>
+                                <v-col cols="10">{{ producto.nombre }} </v-col>
+                                <v-col cols="2">{{ producto.precio }} €</v-col>
+                            </v-row>
+
+                        </v-card-text>
                         <v-card-text v-if="comanda.importe_total != null">
                             <v-row>
-                                <v-col>{{ comanda.importe_total }} $</v-col>
+                                <v-col>{{ comanda.importe_total }} €</v-col>
                             </v-row>
                         </v-card-text>
                         <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>

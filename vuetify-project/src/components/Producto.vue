@@ -51,7 +51,7 @@ export default {
         </v-card-subtitle>
 
         <v-card-actions icon>
-            <v-card-text>{{ producto.precio }}</v-card-text>
+            <v-card-text>{{ producto.precio }} €</v-card-text>
             <v-spacer></v-spacer>
             <v-btn color="blue" variant="text" icon="mdi-delete-outline" @click="deleteP(producto.id)"></v-btn>
             <v-dialog v-model="dialog" persistent width="1024">

@@ -60,7 +60,6 @@ export default {
                 })
         },
         search() {
-            console.log("hola");
             this.searchProduct = {};
             if (this.buscar == "") {
                 this.searchProduct = this.productos;

@@ -51,6 +51,8 @@ const dbConfig = {
 
 let comandas = [];
 
+cargarComandas();
+
 async function cargarComandas() {
     comandas = await selectComanda();
     comandas.forEach(comanda => {
@@ -78,8 +80,6 @@ async function cargarComandas() {
         comandas[i].time = "green";
     }
 }
-
-cargarComandas();
 
 io.on('connection', async (socket) => {
     socket.on('getComandas', async (id) => {
@@ -110,7 +110,7 @@ function updateStateComandas(comandas, idComanda, nuevoEstado) {
 
     comandas[comandaIndex].estado_comanda = nuevoEstado;
 
-    if (nuevoEstado == "PROCESANDO") {
+    if (nuevoEstado == "Procesando") {
         comandas[comandaIndex].time = "green";
         countTimeComanda(comandas, comandaIndex);
     }
@@ -234,7 +234,7 @@ app.post("/insertProducte", async (req, res) => {
     res.json(producto)
 })
 
-app.post("/eliminarStock", async (req, res)=>{
+app.post("/eliminarStock", async (req, res) => {
     const comanda = await selectComandaCantidad(req.body.id)
     console.log(comanda);
     var productoCantidad = comanda[0].productos.split(",")
@@ -243,7 +243,7 @@ app.post("/eliminarStock", async (req, res)=>{
     productoCantidad.forEach(p => {
         cantidad.push(p.split("-"))
     });
-    
+
     console.log(cantidad);
 })
 /* --- CERRAR GESTION DE COMANDAS --- */
@@ -414,7 +414,7 @@ function insertProductDBComanda(idProducto, cantidad, idComanda) {
 function insertDBComanda(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("RECIBIDA", ${id}, "No comments.")`;
+        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("Recibida", ${id}, "No comments.")`;
 
         con.query(sql, function (err, result) {
             if (err) {
@@ -496,9 +496,9 @@ function selectComandaCantidad(id) {
     WHERE C.id_comanda=${id}
     GROUP BY C.id_comanda, C.estado_comanda;`
         con.query(sql, function (err, result) {
-            if(err){
+            if (err) {
                 reject(err);
-            }else{
+            } else {
                 resolve(result);
             }
         })
