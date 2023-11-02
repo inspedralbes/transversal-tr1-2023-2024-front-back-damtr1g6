@@ -22,7 +22,7 @@ export default {
     },
     computed: {
         comandas() {
-            return state.comandas[0].filter(comanda => comanda.estado_comanda == "RECIBIDA");
+            return state.comandas[0].filter(comanda => comanda.estado_comanda == "Recibida");
             
         }
     },
@@ -46,7 +46,7 @@ export default {
                         </v-card-text>
                         <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
                         <v-card-actions>
-                            <v-btn @click="changeState(comanda.id_comanda, 'PROCESANDO')">ACEPTAR</v-btn>
+                            <v-btn @click="changeState(comanda.id_comanda, 'Procesando')">ACEPTAR</v-btn>
                             <v-btn @click="deleteComanda(comanda.id_comanda)">DENEGAR</v-btn>
                             <v-spacer></v-spacer>
                             <v-btn @click="mostrar(comanda.id_comanda)">DETAILS</v-btn>
@@ -56,11 +56,21 @@ export default {
 
                         <div v-if="show === true && idMostrar == comanda.id_comanda">
                             <v-card>
-                                <v-card-title v-if="comanda.productos != null">
-                                    Productos: {{ comanda.productos.length }}
+                                <v-card-title>
+                                    Productos: {{ comanda.productos_total}}
                                 </v-card-title>
+                                <v-card-text>
+                                    <v-row>
+                                        <v-col cols="10">Nombre</v-col>
+                                        <v-col cols="2">Preu</v-col>
+                                    </v-row>
+                                </v-card-text>
                                 <v-card-text v-for="(producto, index) in comanda.productos">
-                                    {{ index + 1 }}. {{ producto }}
+                                    <v-row>
+                                        <v-col cols="10">{{ producto.nombre }}  </v-col>
+                                        <v-col cols="2">{{ producto.precio }}</v-col>
+                                    </v-row>
+                                                             
                                 </v-card-text>
                             </v-card>
                         </div>

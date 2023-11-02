@@ -20,6 +20,7 @@ const io = new Server(server, {
 
 const PORT = 3672;
 var cors = require('cors');
+const { rejects } = require('assert');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -55,7 +56,20 @@ async function cargarComandas() {
     comandas.forEach(comanda => {
         if (comanda.productos != null) {
             var productos = comanda.productos.split(",");
-            comanda.productos = productos;
+            var productosPrecio = []
+            productos.forEach(producto => {
+                productosPrecio.push(producto.split("-"));
+            });
+            var res = []
+            productosPrecio.forEach(p => {
+                var pr = {
+                    nombre: p[0],
+                    precio: p[1]
+                }
+                res.push(pr)
+            });
+
+            comanda.productos = res;
         }
 
     })
@@ -220,6 +234,18 @@ app.post("/insertProducte", async (req, res) => {
     res.json(producto)
 })
 
+app.post("/eliminarStock", async (req, res)=>{
+    const comanda = await selectComandaCantidad(req.body.id)
+    console.log(comanda);
+    var productoCantidad = comanda[0].productos.split(",")
+    console.log(productoCantidad);
+    var cantidad = []
+    productoCantidad.forEach(p => {
+        cantidad.push(p.split("-"))
+    });
+    
+    console.log(cantidad);
+})
 /* --- CERRAR GESTION DE COMANDAS --- */
 
 /* --- GESTION DE IMAGENES --- */
@@ -437,14 +463,14 @@ function deleteComandaDB(id) {
 function selectComanda() {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT(P.nombre) AS productos, SUM(P.precio) AS importe_total
+        var sql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT("(",CO.cantidad , ")",P.nombre, "-",P.precio) AS productos, SUM(P.precio*CO.cantidad) AS importe_total, SUM(CO.cantidad) AS productos_total
         FROM (
             SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
             FROM Comanda
         ) AS C
         LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
         LEFT JOIN Productos AS P ON CO.id_producto = P.id
-        GROUP BY C.id_comanda, C.estado_comanda;        
+        GROUP BY C.id_comanda, C.estado_comanda;           
         `;
         con.query(sql, function (err, result) {
             if (err) {
@@ -457,6 +483,28 @@ function selectComanda() {
     });
 }
 
+function selectComandaCantidad(id) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `SELECT C.id_comanda,GROUP_CONCAT(P.id, "-",CO.cantidad) AS productos
+    FROM (
+        SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+        FROM Comanda
+    ) AS C
+    LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
+    LEFT JOIN Productos AS P ON CO.id_producto = P.id
+    WHERE C.id_comanda=${id}
+    GROUP BY C.id_comanda, C.estado_comanda;`
+        con.query(sql, function (err, result) {
+            if(err){
+                reject(err);
+            }else{
+                resolve(result);
+            }
+        })
+    })
+
+}
 function updateStateDB(id, estado) {
     let con = conectDB();
     var sql = "UPDATE Comanda SET estado='" + estado + "' WHERE id=" + id;
