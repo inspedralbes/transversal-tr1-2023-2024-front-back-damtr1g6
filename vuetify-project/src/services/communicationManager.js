@@ -18,7 +18,7 @@ export function getComandes() {
 
 export async function addProducte(dadaProducte) {
     console.log("addProducte::datos recibidos: ", dadaProducte, typeof dadesPregunta)
-    const response = await fetch(`http://localhost:3672/producto`,
+    const response = await fetch(`http://localhost:3672/addProducto`,
         {
             method: 'POST', headers: {
                 'Content-Type': 'application/json',
@@ -46,7 +46,10 @@ export async function updateProducte(dadaProducte) {
 }
 
 export async function deleteProducte(id) {
-    await fetch('http://localhost:3672/producto/' + id,
+    let exist;
+    await fetch('http://localhost:3672/deleteProducto/' + id,
         { method: 'DELETE' })
-        .then(response => response.json)
+        .then(response => response.json())
+        .then(data => exist = data);
+    return exist;
 }

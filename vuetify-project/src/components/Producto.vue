@@ -10,11 +10,17 @@ export default {
     data: () => ({
         modal: false,
         dialog: false,
-        image: null
+        image: null,
+        modalExist: false,
     }),
     methods: {
         async deleteP(id) {
-            await deleteProducte(id);
+            let deleted = await deleteProducte(id);
+
+            if (!deleted) {
+                this.modalExist = true;
+            }
+
             this.callGetProductes();
         },
         async updateP(producte) {
@@ -24,6 +30,9 @@ export default {
         handleFileUpload(event) {
             const file = event.target.files[0];
             this.producto.image = file;
+        },
+        closeModal() {
+            this.modalExist = false;
         },
     },
 }
@@ -97,8 +106,18 @@ export default {
                     </v-card-actions>
                 </v-card>
             </v-dialog>
+            <v-dialog v-model="modalExist" max-width="300">
+                <v-card>
+                    <v-card-title class="headline"><v-icon color="warning" icon="mdi-alert"></v-icon></v-card-title>
+                    <v-card-text>
+                        El producto está siendo utilizado en una comanda existente.
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-btn @click="closeModal" color="primary">Okey</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
         </v-card-actions>
-
     </v-card>
 </template>
 

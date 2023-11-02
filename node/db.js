@@ -152,7 +152,7 @@ app.get("/productos", (req, res) => {
         })
 });
 
-app.post("/producto", (req, res) => {
+app.post("/addProducto", (req, res) => {
     const producto = req.body;
     const nombre = producto.nombre
     const descripcion = producto.descripcion
@@ -166,16 +166,19 @@ app.post("/producto", (req, res) => {
     res.json(producto)
 })
 
-app.delete("/producto/:id", (req, res) => {
-    const id = req.params.id
-    deleteDBProductos(id)
-    res.json({ "id": id })
-})
-
-// app.post("/productoUpdate", (req, res) => {
-//     const producto = req.body;
-//     updateDBProducto(producto)
-// })
+app.delete("/deleteProducto/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        const success = await deleteDBProductos(id);
+        if (success) {
+            res.send(true);
+        } else {
+            res.send(false);
+        }
+    } catch (error) {
+        res.send(false);
+    }
+});
 
 /* --- CERRAR GESTION DE PRODUCTOS --- */
 
@@ -183,7 +186,6 @@ app.delete("/producto/:id", (req, res) => {
 
 app.post("/usuario", async (req, res) => {
     let email = req.body.email;
-    //let email = "email@gmail.com";
     let myUser = await selectDBMiUsuario(email);
     res.send({ "id": myUser[0].id, "username": myUser[0].usuario, "email": myUser[0].email });
 })
@@ -346,14 +348,19 @@ function updateDBProducto(producto) {
 
 
 function deleteDBProductos(id) {
-    let con = conectDB();
-    var sql = "DELETE FROM Productos WHERE id=" + id;
-    con.query(sql, function (err, result) {
-        if (err) {
-            console.log("error delete producto");
-        }
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = "DELETE FROM Productos WHERE id=" + id;
+
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(true);
+            }
+        });
+        disconnectDB(con);
     });
-    disconnectDB(con);
 }
 
 function selectDBMiUsuario(email) {
@@ -363,13 +370,12 @@ function selectDBMiUsuario(email) {
 
         con.query(sql, function (err, result) {
             if (err) {
-                console.log("error");
                 reject(err);
             } else {
-                disconnectDB(con);
                 resolve(result);
             }
         });
+        disconnectDB(con);
     });
 }
 
@@ -382,9 +388,9 @@ function selectDBUserLogin(user, passwd) {
                 reject(err)
             } else {
                 resolve(result);
-                disconnectDB(con);
             }
         })
+        disconnectDB(con);
     })
 }
 
