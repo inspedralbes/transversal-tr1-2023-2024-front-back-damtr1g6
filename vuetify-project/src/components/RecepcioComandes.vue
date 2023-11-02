@@ -20,6 +20,9 @@ export default {
         },
         mostrar(id) {
             this.idMostrar[id] = !this.idMostrar[id];
+        },
+        extractNom(nom) {
+            return nom.replace(/^\(\d+\)/, '').trim();
         }
     },
     computed: {
@@ -66,14 +69,16 @@ export default {
                                 </v-card-title>
                                 <v-card-text>
                                     <v-row>
-                                        <v-col cols="10">Nom</v-col>
-                                        <v-col cols="2">Preu</v-col>
+                                        <v-col cols="6">Nom</v-col>
+                                        <v-col cols="3">Preu</v-col>
+                                        <v-col cols="3">Quantitat</v-col>
                                     </v-row>
                                 </v-card-text>
                                 <v-card-text v-for="(producto, index) in comanda.productos">
                                     <v-row>
-                                        <v-col cols="10">{{ producto.nombre }} </v-col>
-                                        <v-col cols="2">{{ producto.precio }} €</v-col>
+                                        <v-col cols="6">{{ extractNom(producto.nombre) }} </v-col>
+                                        <v-col cols="3">{{ producto.precio }} €</v-col>
+                                        <v-col cols="3">{{ producto.nombre[1] }} </v-col>
                                     </v-row>
 
                                 </v-card-text>
