@@ -55,6 +55,7 @@ export default {
         async callGetProductes() {
             getProductes()
                 .then((data) => {
+                    console.log(data);
                     this.productos = data;
                     this.searchProduct = data;
                 })

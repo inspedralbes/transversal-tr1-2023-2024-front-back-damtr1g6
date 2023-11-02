@@ -28,14 +28,21 @@ export async function addProducte(dadaProducte) {
 }
 
 export async function updateProducte(dadaProducte) {
-    console.log("addProducte::datos recibidos: ", dadaProducte, typeof dadesPregunta)
-    const response = await fetch(`http://localhost:3672/productoUpdate`,
-        {
-            method: 'POST', headers: {
-                'Content-Type': 'application/json',
-            },
-            body: dadaProducte
-        },)
+    var formData = new FormData();
+    formData.append("id", dadaProducte.id);
+    formData.append("nombre", dadaProducte.nombre);
+    formData.append("descripcion", dadaProducte.descripcion);
+    formData.append("estado", dadaProducte.estado);
+    formData.append("imagen_url", dadaProducte.imagen_url);
+    formData.append("precio", dadaProducte.precio);
+    formData.append("stock", dadaProducte.stock);
+    formData.append("image", dadaProducte.image);
+
+    const response = await fetch(`http://localhost:3672/updateProducto`, {
+        method: 'POST',
+        mode: 'cors',
+        body: formData,
+    });
 }
 
 export async function deleteProducte(id) {

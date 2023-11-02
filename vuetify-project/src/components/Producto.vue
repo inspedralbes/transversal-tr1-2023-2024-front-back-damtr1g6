@@ -10,6 +10,7 @@ export default {
     data: () => ({
         modal: false,
         dialog: false,
+        image: null
     }),
     methods: {
         async deleteP(id) {
@@ -17,9 +18,13 @@ export default {
             this.callGetProductes();
         },
         async updateP(producte) {
-            await updateProducte(JSON.stringify(producte))
+            await updateProducte(producte);
             this.callGetProductes();
-        }
+        },
+        handleFileUpload(event) {
+            const file = event.target.files[0];
+            this.producto.image = file;
+        },
     },
 }
 </script>
@@ -66,7 +71,8 @@ export default {
                                         hint="Ensalada fresca de frutas tropicales" required></v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="4">
-                                    <v-text-field label="Imagen*" v-model="producto.imagen_url" required></v-text-field>
+                                    <v-file-input accept="image/*" label="Image" @change="handleFileUpload"
+                                        require></v-file-input>
                                 </v-col>
                                 <v-col cols="12" sm="4">
                                     <v-text-field label="Stock*" v-model="producto.stock" type="number"
