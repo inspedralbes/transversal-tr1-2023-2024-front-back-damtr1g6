@@ -1,6 +1,7 @@
 const express = require('express');
 var mysql = require('mysql2');
 const fs = require('fs');
+const multer = require('multer');
 const date = new Date();
 var bodyP = require("body-parser");
 
@@ -18,10 +19,24 @@ const io = new Server(server, {
 });
 
 const PORT = 3672;
-var cors = require('cors')
+var cors = require('cors');
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './images');
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    }
+});
+
+const upload = multer({ storage: storage });
+
+if (!fs.existsSync('./images')) {
+    fs.mkdirSync('./images');
+}
 
 app.use(cors());
-app.use(bodyP.json());
 app.use(express.json());
 
 const dbConfig = {
@@ -143,10 +158,10 @@ app.delete("/producto/:id", (req, res) => {
     res.json({ "id": id })
 })
 
-app.post("/productoUpdate", (req, res) => {
-    const producto = req.body;
-    updateDBProducto(producto)
-})
+// app.post("/productoUpdate", (req, res) => {
+//     const producto = req.body;
+//     updateDBProducto(producto)
+// })
 
 /* --- CERRAR GESTION DE PRODUCTOS --- */
 
@@ -205,9 +220,28 @@ app.post("/insertProducte", async (req, res) => {
 
 /* --- CERRAR GESTION DE COMANDAS --- */
 
+/* --- GESTION DE IMAGENES --- */
+
 app.get("/api/images/:name", (req, res) => {
     res.sendFile(path.resolve("./images/" + req.params.name));
 })
+
+app.post('/updateProducto', upload.single('image'), (req, res) => {
+    let producto = req.body;
+
+    if (req.file != undefined) {
+        if (req.file.filename != req.body.imagen_url) {
+            const imagePath = `images/${req.body.imagen_url}`;
+            fs.unlinkSync(imagePath);
+            producto.imagen_url = req.file.filename;
+        }
+    }
+
+    updateDBProducto(producto);
+    res.send({ "message": "Producto actualizado" });
+});
+
+/* --- CERRAR GESTION DE IMAGENES --- */
 
 server.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT)
