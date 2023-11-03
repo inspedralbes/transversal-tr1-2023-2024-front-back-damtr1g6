@@ -51,7 +51,7 @@ export default {
         </v-card-subtitle>
 
         <v-card-actions icon>
-            <v-card-text>{{ producto.precio }} €</v-card-text>
+            <v-card-text>{{ producto.preu }} €</v-card-text>
             <v-spacer></v-spacer>
             <v-btn color="blue" variant="text" icon="mdi-delete-outline" @click="deleteP(producto.id)"></v-btn>
             <v-dialog v-model="dialog" persistent width="1024">
@@ -68,15 +68,15 @@ export default {
                         <v-container>
                             <v-row>
                                 <v-col cols="12" sm="6" md="7">
-                                    <v-text-field label="Nom producte*" v-model="producto.nombre" required></v-text-field>
+                                    <v-text-field label="Nom producte*" v-model="producto.nom" required></v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="5">
-                                    <v-text-field label="Preu*" v-model="producto.precio" type="number"
+                                    <v-text-field label="Preu*" v-model="producto.preu" type="number"
                                         required></v-text-field>
                                 </v-col>
 
                                 <v-col cols="12">
-                                    <v-text-field label="Descripcio*" v-model="producto.descripcion"
+                                    <v-text-field label="Descripcio*" v-model="producto.descripcio"
                                         hint="Ensalada fresca de frutas tropicales" required></v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="4">
@@ -84,12 +84,12 @@ export default {
                                         require></v-file-input>
                                 </v-col>
                                 <v-col cols="12" sm="4">
-                                    <v-text-field label="Stock*" v-model="producto.stock" type="number"
+                                    <v-text-field label="Stock*" v-model="producto.estoc" type="number"
                                         required></v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="4">
                                     <v-select :items="['Disponible', 'No disponible']" label="Estado*" required
-                                        v-model="producto.estado"></v-select>
+                                        v-model="producto.estat"></v-select>
                                 </v-col>
                             </v-row>
                         </v-container>

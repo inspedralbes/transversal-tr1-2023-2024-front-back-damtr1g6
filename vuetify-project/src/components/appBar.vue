@@ -173,7 +173,7 @@ export default {
                     <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
                         v-for="producto in this.searchProduct">
                         <Producto :producto="producto" :callGetProductes="callGetProductes"
-                            :imageName="getImageName(producto.imagen_url)" />
+                            :imageName="getImageName(producto.imatge_url)" />
                     </v-col>
                 </v-row>
             </v-container>
