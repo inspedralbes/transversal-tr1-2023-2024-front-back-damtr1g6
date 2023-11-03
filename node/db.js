@@ -229,15 +229,18 @@ app.post("/createComanda", async (req, res) => {
 })
 
 app.post("/insertProducte", async (req, res) => {
-    const producto = req.body;
-    console.log(producto);
-    await insertProductDBComanda(producto.idProducto, producto.cantidad, producto.idComanda);
+    const productos = req.body;
+    console.log(productos);
+    productos.forEach(async(element) => {
+        await insertProductDBComanda(element.idProducto, element.cantidad, element.idComanda);
 
-    var productoEliminarStock = await selectDBProducteID(producto.idProducto);
-    productoEliminarStock[0].stock -= producto.cantidad
-    updateDBProducto(productoEliminarStock[0]);
+        var productoEliminarStock = await selectDBProducteID(element.idProducto);
+        productoEliminarStock[0].stock -= element.cantidad
+        updateDBProducto(productoEliminarStock[0]);
+    });
 
-    res.json(producto)
+
+    res.json(productos)
 })
 /* --- CERRAR GESTION DE COMANDAS --- */
 
