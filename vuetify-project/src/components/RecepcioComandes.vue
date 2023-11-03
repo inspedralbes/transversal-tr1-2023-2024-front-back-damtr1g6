@@ -23,6 +23,10 @@ export default {
         },
         extractNom(nom) {
             return nom.replace(/^\(\d+\)/, '').trim();
+        },
+        extraerValorEntreParentesis(texto) {
+            const expresionRegular = /\((\d+)\)/;
+            return texto.match(expresionRegular);
         }
     },
     computed: {
@@ -78,7 +82,7 @@ export default {
                                     <v-row>
                                         <v-col cols="6">{{ extractNom(producto.nombre) }} </v-col>
                                         <v-col cols="3">{{ producto.precio }} €</v-col>
-                                        <v-col cols="3">{{ producto.nombre[1] }} </v-col>
+                                        <v-col cols="3">{{ extraerValorEntreParentesis(producto.nombre) }} </v-col>
                                     </v-row>
 
                                 </v-card-text>
