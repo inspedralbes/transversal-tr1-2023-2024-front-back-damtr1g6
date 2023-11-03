@@ -223,8 +223,7 @@ app.post("/miUsuario", (req, res) => {
 /* --- GESTION DE COMANDAS --- */
 
 app.post("/createComanda", async (req, res) => {
-    // let id_user = req.body.id;
-    let id_user = 1;
+    let id_user = req.body.id_user;
     res.send({ id_comanda: await insertDBComanda(id_user) });
 })
 

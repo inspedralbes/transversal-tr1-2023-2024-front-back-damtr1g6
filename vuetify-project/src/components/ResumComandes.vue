@@ -29,79 +29,50 @@ export default {
         <v-container>
             <v-row>
                 <v-col>
-                    <v-card>
+                    <v-card style="height: 100vh; padding: 30px;">
                         <v-card-title>EN PREPARACIO</v-card-title>
                         <v-divider></v-divider>
                         <br>
                         <v-row>
-                            <v-col cols="6" v-for="comanda in comandasProcessant">
+                            <v-col cols="4" v-for="comanda in comandasProcessant">
                                 <v-card>
                                     <v-card-title>
                                         ID: {{ comanda.id_comanda }}
                                     </v-card-title>
-                                    <v-card-title>
+                                    <v-divider></v-divider>
+                                    <v-card-title><b>{{ comanda.estado_comanda }}</b></v-card-title>
+                                    <v-card-text v-if="comanda.productos_total != null">
                                         Productes: {{ comanda.productos_total }}
-                                    </v-card-title>
-                                    <v-card-text>
-                                        <v-row>
-                                            <v-col cols="10">Nom</v-col>
-                                            <v-col cols="2">Preu</v-col>
-                                        </v-row>
                                     </v-card-text>
-                                    <v-card-text v-for="(producto, index) in comanda.productos">
-                                        <v-row>
-                                            <v-col cols="10">{{ producto.nombre }} </v-col>
-                                            <v-col cols="2">{{ producto.precio }} €</v-col>
-                                        </v-row>
-
+                                    <v-card-text v-else>
+                                        Productes: 0
                                     </v-card-text>
-                                    <v-card-text v-if="comanda.importe_total != null">
-                                        <v-row>
-                                            <v-col>Total: {{ comanda.importe_total }} €</v-col>
-                                        </v-row>
-                                    </v-card-text>
-                                    <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
-                                    <v-card-actions>
-                                        <v-btn @click="changeState(comanda.id_comanda, 'Preparada')">PREPARADA</v-btn>
-                                    </v-card-actions>
+                                    
                                 </v-card>
                             </v-col>
                         </v-row>
                     </v-card>
                 </v-col>
                 <v-col>
-                    <v-card>
+                    <v-card style="height: 100vh; padding: 30px;">
                         <v-card-title>PREPARADA</v-card-title>
                         <v-divider></v-divider>
                         <br>
                         <v-row>
-                            <v-col cols="6" v-for="comanda in comandasPreaparada">
-                                <v-card>
+                            <v-col cols="4" v-for="comanda in comandasPreaparada">
+                                <v-card style="background-color:#A8F68A">
                                     <v-card-title>
                                         ID: {{ comanda.id_comanda }}
                                     </v-card-title>
-                                    <v-card-title>
+                                    <v-divider></v-divider>
+                                    <v-card-title><b>{{ comanda.estado_comanda }}</b></v-card-title>
+                                    <v-card-text v-if="comanda.productos_total != null">
                                         Productes: {{ comanda.productos_total }}
-                                    </v-card-title>
-                                    <v-card-text>
-                                        <v-row>
-                                            <v-col cols="10">Nom</v-col>
-                                            <v-col cols="2">Preu</v-col>
-                                        </v-row>
                                     </v-card-text>
-                                    <v-card-text v-for="(producto, index) in comanda.productos">
-                                        <v-row>
-                                            <v-col cols="10">{{ producto.nombre }} </v-col>
-                                            <v-col cols="2">{{ producto.precio }} €</v-col>
-                                        </v-row>
-
+                                    <v-card-text v-else>
+                                        Productes: 0
                                     </v-card-text>
-                                    <v-card-text v-if="comanda.importe_total != null">
-                                        <v-row>
-                                            <v-col>Total: {{ comanda.importe_total }} €</v-col>
-                                        </v-row>
-                                    </v-card-text>
-                                    <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
+                                    <v-divider></v-divider>
                                     <v-card-actions>
                                         <v-btn @click="changeState(comanda.id_comanda, 'Recollida')">RECOLLIR</v-btn>
                                     </v-card-actions>
