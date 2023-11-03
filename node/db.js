@@ -230,8 +230,8 @@ app.post("/createComanda", async (req, res) => {
 
 app.post("/insertProducte", async (req, res) => {
     const productos = req.body;
-    console.log(productos);
-    productos.forEach(async(element) => {
+
+    productos.forEach(async (element) => {
         await insertProductDBComanda(element.idProducto, element.cantidad, element.idComanda);
 
         var productoEliminarStock = await selectDBProducteID(element.idProducto);
@@ -239,8 +239,8 @@ app.post("/insertProducte", async (req, res) => {
         updateDBProducto(productoEliminarStock[0]);
     });
 
-
-    res.json(producto)
+    selectProductsComanda(productos[0].idComanda);
+    res.json(productos)
 })
 /* --- CERRAR GESTION DE COMANDAS --- */
 
@@ -292,7 +292,7 @@ function disconnectDB(con) {
 function selectDBProducteID(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = "SELECT * FROM Productos WHERE id=" + id;
+        var sql = "SELECT * FROM Productos WHERE id= " + id;
         con.query(sql, function (err, result) {
             if (err) {
                 reject(err);
@@ -330,7 +330,6 @@ function insertDBProductos(nombre, descripcion, precio, imagen_url, stock, estad
 }
 
 function updateDBProducto(producto) {
-    console.log(producto);
     const id = producto.id
     const nombre = producto.nombre
     const descripcion = producto.descripcion
@@ -415,8 +414,6 @@ function insertProductDBComanda(idProducto, cantidad, idComanda) {
     con.query(sql, function (err, result) {
         if (err) {
             console.log(err);
-        } else {
-            console.log(result)
         }
         disconnectDB(con);
     });
@@ -425,12 +422,20 @@ function insertProductDBComanda(idProducto, cantidad, idComanda) {
 function selectProductsComanda(idComanda) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var selectSql = `SELECT FROM Contiene WHERE id_comanda = ${idComanda}`;
+        var selectSql = `SELECT * FROM Contiene WHERE id_comanda = ${idComanda}`;
 
-        con.query(selectSql, function (err, result) {
+        con.query(selectSql, async function (err, result) {
             if (err) {
                 reject(err);
             } else {
+                let comandaEncontrada = comandas.findIndex(comanda => comanda.id_comanda == idComanda);
+                comandas[comandaEncontrada].productos = [];
+
+                for (let i = 0; i < result.length; i++) {
+                    let productoEncontrado = await selectDBProducteID(result[i].id_producto);
+                    comandas[comandaEncontrada].productos.push(productoEncontrado[0]);
+                }
+
                 io.emit('comandas', comandas);
                 resolve(result);
             }
@@ -511,28 +516,6 @@ function selectComanda() {
     });
 }
 
-function selectComandaCantidad(id) {
-    return new Promise((resolve, reject) => {
-        let con = conectDB();
-        var sql = `SELECT C.id_comanda,GROUP_CONCAT(P.id, "-",CO.cantidad) AS productos
-    FROM (
-        SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
-        FROM Comanda
-    ) AS C
-    LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
-    LEFT JOIN Productos AS P ON CO.id_producto = P.id
-    WHERE C.id_comanda=${id}
-    GROUP BY C.id_comanda, C.estado_comanda;`
-        con.query(sql, function (err, result) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        })
-    })
-
-}
 function updateStateDB(id, estado) {
     let con = conectDB();
     var sql = "UPDATE Comanda SET estado='" + estado + "' WHERE id=" + id;
