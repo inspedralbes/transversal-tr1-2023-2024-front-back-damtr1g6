@@ -229,17 +229,34 @@ app.post("/createComanda", async (req, res) => {
 
 app.post("/insertProducte", async (req, res) => {
     const productos = req.body;
+    const promesas = [];
 
-    productos.forEach(async (element) => {
-        await insertProductDBComanda(element.idProducto, element.cantidad, element.idComanda);
+    const procesarProductos = async () => {
+        for (const element of productos) {
+            try {
+                const insertResult = await insertProductDBComanda(element.idProducto, element.cantidad, element.idComanda);
+                const productoEliminarStock = await selectDBProducteID(element.idProducto);
+                productoEliminarStock[0].stock -= element.cantidad;
+                const updateResult = await updateDBProducto(productoEliminarStock[0]);
+                promesas.push(insertResult, updateResult);
+            } catch (error) {
+                console.error(error);
+            }
+        }
 
-        var productoEliminarStock = await selectDBProducteID(element.idProducto);
-        productoEliminarStock[0].stock -= element.cantidad
-        updateDBProducto(productoEliminarStock[0]);
-    });
+        await Promise.all(promesas);
 
-    selectProductsComanda(productos[0].idComanda);
-    res.json(productos)
+        try {
+            await selectProductsComanda(productos[0].idComanda);
+            io.emit('comandas', comandas);
+            res.json(productos);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Error al seleccionar productos de la comanda' });
+        }
+    };
+
+    procesarProductos();
 })
 /* --- CERRAR GESTION DE COMANDAS --- */
 
@@ -407,40 +424,63 @@ function insertDBUsuario(email, usuario, rol, tarjeta, passwd) {
 }
 
 function insertProductDBComanda(idProducto, cantidad, idComanda) {
-    let con = conectDB();
-    var sql = `INSERT INTO Contiene(id_producto, cantidad, id_comanda) VALUES(${idProducto},${cantidad},${idComanda} )`;
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `INSERT INTO Contiene(id_producto, cantidad, id_comanda) VALUES(${idProducto},${cantidad},${idComanda} )`;
 
-    con.query(sql, function (err, result) {
-        if (err) {
-            console.log(err);
-        }
-        disconnectDB(con);
+        con.query(sql, function (err, result) {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                resolve();
+            }
+            disconnectDB(con);
+        });
     });
 }
 
 function selectProductsComanda(idComanda) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var selectSql = `SELECT * FROM Contiene WHERE id_comanda = ${idComanda}`;
+        var selectSql = `SELECT GROUP_CONCAT("(",CO.cantidad , ")",P.nombre, "-",P.precio) AS productos, SUM(P.precio*CO.cantidad) AS importe_total, SUM(CO.cantidad) AS productos_total
+                FROM (
+                    SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+                    FROM Comanda WHERE id = ${idComanda}
+                ) AS C
+                LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
+                LEFT JOIN Productos AS P ON CO.id_producto = P.id
+                GROUP BY C.id_comanda, C.estado_comanda`;
 
         con.query(selectSql, async function (err, result) {
             if (err) {
                 reject(err);
             } else {
                 let comandaEncontrada = comandas.findIndex(comanda => comanda.id_comanda == idComanda);
-                comandas[comandaEncontrada].productos = [];
-
-                for (let i = 0; i < result.length; i++) {
-                    let productoEncontrado = await selectDBProducteID(result[i].id_producto);
-                    comandas[comandaEncontrada].productos.push(productoEncontrado[0]);
-                }
-
-                io.emit('comandas', comandas);
+                comandas[comandaEncontrada].productos = desconcatenador(result[0]);
                 resolve(result);
             }
             disconnectDB(con);
         });
     });
+}
+
+function desconcatenador(productos) {
+    var arrayProductos = productos.productos.split(",");
+    var productosPrecio = [];
+    arrayProductos.forEach(producto => {
+        productosPrecio.push(producto.split("-"));
+    });
+    var res = []
+    productosPrecio.forEach(p => {
+        var pr = {
+            nombre: p[0],
+            precio: p[1]
+        }
+        res.push(pr)
+    });
+
+    return res;
 }
 
 function insertDBComanda(id) {
@@ -452,7 +492,7 @@ function insertDBComanda(id) {
             if (err) {
                 reject(err);
             } else {
-                var selectSql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT(P.nombre) AS productos, SUM(P.precio) AS importe_total
+                var selectSql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT(P.nombre) AS productos, SUM(P.precio*cantidad) AS importe_total
                 FROM (
                     SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
                     FROM Comanda WHERE id = ${result.insertId}
