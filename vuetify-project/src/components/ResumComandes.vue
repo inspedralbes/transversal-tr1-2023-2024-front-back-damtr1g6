@@ -4,22 +4,20 @@ import { socket, state } from '@/services/socket';
 
 export default {
     data: () => ({
-        show: false
     }),
     methods: {
         changeState(id, state) {
             socket.emit('changeState', { id: id, state: state });
 
         },
-        mostrar(id) {
-            this.show = !this.show;
-            this.idMostrar = id;
-        }
     },
     computed: {
-        comandas() {
+        comandasPreaparada() {
             return state.comandas[0].filter(comanda => comanda.estado_comanda == "Preparada");
-        }
+        },
+        comandasProcessant() {
+            return state.comandas[0].filter(comanda => comanda.estado_comanda == "Processant");
+        },
     },
     mounted() {
         socket.emit('getComandas', {});
@@ -30,31 +28,87 @@ export default {
     <v-main class="box-recepcio-comandes">
         <v-container>
             <v-row>
-                <v-col cols="3" v-for="comanda in comandas">
+                <v-col>
                     <v-card>
-                        <v-card-title>
-                            Comanda: {{ comanda.id_comanda }}
-                        </v-card-title>
-                        <v-card-text v-if="comanda.importe_total != null"><b>{{ comanda.estado_comanda }}</b></v-card-text>
-                        <v-card-actions>
-                            <v-btn @click="changeState(comanda.id_comanda, 'Recollida')">RECOLLIR</v-btn>
-                            <v-spacer></v-spacer>
-                            <v-btn @click="mostrar(comanda.id_comanda)">DETALLS</v-btn>
-                        </v-card-actions>
-                    </v-card>
-                    <v-expand-transition>
+                        <v-card-title>EN PREPARACIO</v-card-title>
+                        <v-divider></v-divider>
+                        <br>
+                        <v-row>
+                            <v-col cols="6" v-for="comanda in comandasProcessant">
+                                <v-card>
+                                    <v-card-title>
+                                        ID: {{ comanda.id_comanda }}
+                                    </v-card-title>
+                                    <v-card-title>
+                                        Productes: {{ comanda.productos_total }}
+                                    </v-card-title>
+                                    <v-card-text>
+                                        <v-row>
+                                            <v-col cols="10">Nom</v-col>
+                                            <v-col cols="2">Preu</v-col>
+                                        </v-row>
+                                    </v-card-text>
+                                    <v-card-text v-for="(producto, index) in comanda.productos">
+                                        <v-row>
+                                            <v-col cols="10">{{ producto.nombre }} </v-col>
+                                            <v-col cols="2">{{ producto.precio }} €</v-col>
+                                        </v-row>
 
-                        <div v-if="show === true && idMostrar == comanda.id_comanda">
-                            <v-card>
-                                <v-card-title v-if="comanda.productos = ! null">
-                                    Productes: {{ comanda.productos.length }}
-                                </v-card-title>
-                                <v-card-text v-for="(producto, index) in comanda.productos">
-                                    {{ index + 1 }}. {{ producto }}
-                                </v-card-text>
-                            </v-card>
-                        </div>
-                    </v-expand-transition>
+                                    </v-card-text>
+                                    <v-card-text v-if="comanda.importe_total != null">
+                                        <v-row>
+                                            <v-col>Total: {{ comanda.importe_total }} €</v-col>
+                                        </v-row>
+                                    </v-card-text>
+                                    <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
+                                    <v-card-actions>
+                                        <v-btn @click="changeState(comanda.id_comanda, 'Preparada')">PREPARADA</v-btn>
+                                    </v-card-actions>
+                                </v-card>
+                            </v-col>
+                        </v-row>
+                    </v-card>
+                </v-col>
+                <v-col>
+                    <v-card>
+                        <v-card-title>PREPARADA</v-card-title>
+                        <v-divider></v-divider>
+                        <br>
+                        <v-row>
+                            <v-col cols="6" v-for="comanda in comandasPreaparada">
+                                <v-card>
+                                    <v-card-title>
+                                        ID: {{ comanda.id_comanda }}
+                                    </v-card-title>
+                                    <v-card-title>
+                                        Productes: {{ comanda.productos_total }}
+                                    </v-card-title>
+                                    <v-card-text>
+                                        <v-row>
+                                            <v-col cols="10">Nom</v-col>
+                                            <v-col cols="2">Preu</v-col>
+                                        </v-row>
+                                    </v-card-text>
+                                    <v-card-text v-for="(producto, index) in comanda.productos">
+                                        <v-row>
+                                            <v-col cols="10">{{ producto.nombre }} </v-col>
+                                            <v-col cols="2">{{ producto.precio }} €</v-col>
+                                        </v-row>
+
+                                    </v-card-text>
+                                    <v-card-text v-if="comanda.importe_total != null">
+                                        <v-row>
+                                            <v-col>Total: {{ comanda.importe_total }} €</v-col>
+                                        </v-row>
+                                    </v-card-text>
+                                    <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
+                                    <v-card-actions>
+                                        <v-btn @click="changeState(comanda.id_comanda, 'Recollida')">RECOLLIR</v-btn>
+                                    </v-card-actions>
+                                </v-card>
+                            </v-col>
+                        </v-row>
+                    </v-card>
                 </v-col>
             </v-row>
         </v-container>
