@@ -268,6 +268,7 @@ server.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT)
 })
 
+/* --- APARTADO DE CONSULTAS SQL*/
 function conectDB() {
     let con = mysql.createConnection(dbConfig)
     con.connect(function (err) {
@@ -289,7 +290,7 @@ function disconnectDB(con) {
 function selectDBProducteID(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = "SELECT * FROM Productos WHERE id=" + id;
+        var sql = "SELECT * FROM Productes WHERE id=" + id;
         con.query(sql, function (err, result) {
             if (err) {
                 reject(err);
@@ -303,7 +304,7 @@ function selectDBProducteID(id) {
 function selectDBProductes() {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = "SELECT * FROM Productos";
+        var sql = "SELECT * FROM Productes";
         con.query(sql, function (err, result) {
             if (err) {
                 reject(err);
@@ -317,7 +318,7 @@ function selectDBProductes() {
 
 function insertDBProductos(nombre, descripcion, precio, imagen_url, stock, estado) {
     let con = conectDB();
-    var sql = "INSERT INTO Productos (nombre, descripcion, precio, imagen_url, stock, estado)VALUES ('" + nombre + "', '" + descripcion + "', " + precio + ", '" + imagen_url + "', " + stock + ", '" + estado + "');";
+    var sql = "INSERT INTO Productes (nom, descripcio, preu, imatge_url, estoc, estat)VALUES ('" + nombre + "', '" + descripcion + "', " + precio + ", '" + imagen_url + "', " + stock + ", '" + estado + "');";
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error insert producto");
@@ -337,7 +338,7 @@ function updateDBProducto(producto) {
     const estado = producto.estado
 
     let con = conectDB();
-    var sql = "UPDATE Productos SET nombre='" + nombre + "', descripcion='" + descripcion + "', precio=" + precio + ", imagen_url='" + imagen_url + "', stock=" + stock + ", estado='" + estado + "' WHERE id=" + id;
+    var sql = "UPDATE Productes SET nom='" + nombre + "', descripcio='" + descripcion + "', preu=" + precio + ", imatge_url	='" + imagen_url + "', estoc=" + stock + ", estat='" + estado + "' WHERE id=" + id;
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error update producto." + err);
@@ -350,7 +351,7 @@ function updateDBProducto(producto) {
 function deleteDBProductos(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = "DELETE FROM Productos WHERE id=" + id;
+        var sql = "DELETE FROM Productes WHERE id=" + id;
 
         con.query(sql, function (err, result) {
             if (err) {
@@ -366,7 +367,7 @@ function deleteDBProductos(id) {
 function selectDBMiUsuario(email) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT * FROM Usuario WHERE email = "${email}"`;
+        var sql = `SELECT * FROM Usuari WHERE email = "${email}"`;
 
         con.query(sql, function (err, result) {
             if (err) {
@@ -382,7 +383,7 @@ function selectDBMiUsuario(email) {
 function selectDBUserLogin(user, passwd) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT * FROM Usuario WHERE usuario="${user}" and passwd="${passwd}"`
+        var sql = `SELECT * FROM Usuari WHERE usuari="${user}" and contrassenya="${passwd}"`
         con.query(sql, function (err, result) {
             if (err) {
                 reject(err)
@@ -396,7 +397,7 @@ function selectDBUserLogin(user, passwd) {
 
 function insertDBUsuario(email, usuario, rol, tarjeta, passwd) {
     let con = conectDB();
-    var sql = "INSERT INTO Usuario (email, usuario, rol, tarjeta, passwd)VALUES ('" + email + "', '" + usuario + "', '" + rol + "', '" + tarjeta + "', '" + passwd + "');";
+    var sql = "INSERT INTO Usuari (email, usuari, rol, targeta, contrassenya)VALUES ('" + email + "', '" + usuario + "', '" + rol + "', '" + tarjeta + "', '" + passwd + "');";
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error insert producto");
@@ -407,7 +408,7 @@ function insertDBUsuario(email, usuario, rol, tarjeta, passwd) {
 
 function insertProductDBComanda(idProducto, cantidad, idComanda) {
     let con = conectDB();
-    var sql = `INSERT INTO Contiene(id_producto, cantidad, id_comanda) VALUES(${idProducto},${cantidad},${idComanda} )`;
+    var sql = `INSERT INTO Conte(id_producte, quantitat, id_comanda) VALUES(${idProducto},${cantidad},${idComanda} )`;
 
     con.query(sql, function (err, result) {
         if (err) {
@@ -422,7 +423,7 @@ function insertProductDBComanda(idProducto, cantidad, idComanda) {
 function insertDBComanda(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("Recibida", ${id}, "No comments.")`;
+        var sql = `INSERT INTO Comanda(estat, id_usuari, comentaris) VALUES("Rebuda", ${id}, "No comments.")`;
 
         con.query(sql, function (err, result) {
             if (err) {
@@ -471,13 +472,13 @@ function deleteComandaDB(id) {
 function selectComanda() {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT("(",CO.cantidad , ")",P.nombre, "-",P.precio) AS productos, SUM(P.precio*CO.cantidad) AS importe_total, SUM(CO.cantidad) AS productos_total
+        var sql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT("(",CO.quantitat , ")",P.nom, "-",P.preu) AS productos, SUM(P.preu*CO.quantitat) AS importe_total, SUM(CO.quantitat) AS productos_total
         FROM (
-            SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+            SELECT DISTINCT id AS id_comanda, estat AS estado_comanda
             FROM Comanda
         ) AS C
-        LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
-        LEFT JOIN Productos AS P ON CO.id_producto = P.id
+        LEFT JOIN Conte AS CO ON C.id_comanda = CO.id_comanda
+        LEFT JOIN Productes AS P ON CO.id_producte = P.id
         GROUP BY C.id_comanda, C.estado_comanda;           
         `;
         con.query(sql, function (err, result) {
@@ -494,13 +495,13 @@ function selectComanda() {
 function selectComandaCantidad(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT C.id_comanda,GROUP_CONCAT(P.id, "-",CO.cantidad) AS productos
+        var sql = `SELECT C.id_comanda,GROUP_CONCAT(P.id, "-",CO.quantitat) AS productos
     FROM (
-        SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+        SELECT DISTINCT id AS id_comanda, estat AS estado_comanda
         FROM Comanda
     ) AS C
-    LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
-    LEFT JOIN Productos AS P ON CO.id_producto = P.id
+    LEFT JOIN Conte AS CO ON C.id_comanda = CO.id_comanda
+    LEFT JOIN Productes AS P ON CO.id_producte = P.id
     WHERE C.id_comanda=${id}
     GROUP BY C.id_comanda, C.estado_comanda;`
         con.query(sql, function (err, result) {
@@ -515,7 +516,7 @@ function selectComandaCantidad(id) {
 }
 function updateStateDB(id, estado) {
     let con = conectDB();
-    var sql = "UPDATE Comanda SET estado='" + estado + "' WHERE id=" + id;
+    var sql = "UPDATE Comanda SET estat='" + estado + "' WHERE id=" + id;
     con.query(sql, function (err, result) {
         if (err) {
             console.log("error update comanda");
@@ -523,3 +524,4 @@ function updateStateDB(id, estado) {
     });
     disconnectDB(con);
 }
+/* --- CERRAR APARTADO DE CONSULTAS SQL*/
