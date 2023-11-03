@@ -43,11 +43,11 @@ export default {
         <v-img :src="imageName" height="380px" alter="no encontrado" cover></v-img>
 
         <v-card-title>
-            {{ producto.nombre }}
+            {{ producto.nom }}
         </v-card-title>
 
         <v-card-subtitle>
-            {{ producto.descripcion }}
+            {{ producto.descripcio }}
         </v-card-subtitle>
 
         <v-card-actions icon>

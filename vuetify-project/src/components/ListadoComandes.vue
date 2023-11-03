@@ -43,7 +43,7 @@ export default {
                         <v-card-text v-for="(producto, index) in comanda.productos">
                             <v-row>
                                 <v-col cols="10">{{ producto.nombre }} </v-col>
-                                <v-col cols="2">{{ producto.precio }} €</v-col>
+                                <v-col cols="2">{{ producto.preu }} €</v-col>
                             </v-row>
 
                         </v-card-text>
