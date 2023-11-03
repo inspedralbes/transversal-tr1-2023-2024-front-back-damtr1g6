@@ -429,13 +429,13 @@ function insertDBComanda(id) {
             if (err) {
                 reject(err);
             } else {
-                var selectSql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT(P.nombre) AS productos, SUM(P.precio) AS importe_total
+                var selectSql = `SELECT C.id_comanda, C.estado_comanda, GROUP_CONCAT(P.nom) AS productos, SUM(P.preu) AS importe_total
                 FROM (
-                    SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+                    SELECT DISTINCT id AS id_comanda, estat AS estado_comanda
                     FROM Comanda WHERE id = ${result.insertId}
                 ) AS C
-                LEFT JOIN Contiene AS CO ON C.id_comanda = CO.id_comanda
-                LEFT JOIN Productos AS P ON CO.id_producto = P.id
+                LEFT JOIN Conte AS CO ON C.id_comanda = CO.id_comanda
+                LEFT JOIN Productes AS P ON CO.id_producte = P.id
                 GROUP BY C.id_comanda, C.estado_comanda`;
 
                 con.query(selectSql, function (err, comandaResult) {
