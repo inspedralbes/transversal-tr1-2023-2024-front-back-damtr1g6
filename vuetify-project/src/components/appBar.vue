@@ -64,7 +64,7 @@ export default {
             if (this.buscar == "") {
                 this.searchProduct = this.productos;
             } else {
-                this.searchProduct = this.productos.filter(producto => producto.nombre.toLowerCase().includes(this.buscar.toLowerCase()));
+                this.searchProduct = this.productos.filter(producto => producto.nom.toLowerCase().includes(this.buscar.toLowerCase()));
             }
         },
         getImageName(img) {
@@ -113,36 +113,36 @@ export default {
                                                                 <v-row>
                                                                     <v-col cols="12" sm="6" md="7">
                                                                         <v-text-field label="Nom producte*"
-                                                                            v-model="producto.nombre"
+                                                                            v-model="producto.nom"
                                                                             required></v-text-field>
                                                                     </v-col>
                                                                     <v-col cols="12" sm="6" md="5">
                                                                         <v-text-field label="Preu*"
-                                                                            v-model="producto.precio" type="number"
+                                                                            v-model="producto.preu" type="number"
                                                                             required></v-text-field>
                                                                     </v-col>
 
                                                                     <v-col cols="12">
                                                                         <v-text-field label="Descripcio*"
-                                                                            v-model="producto.descripcion"
+                                                                            v-model="producto.descripcio"
                                                                             hint="Ensalada fresca de frutas tropicales"
                                                                             required></v-text-field>
                                                                     </v-col>
                                                                     <v-col cols="12" sm="4">
                                                                         <v-text-field label="Imagen*"
-                                                                            v-model="producto.imagen_url"
+                                                                            v-model="producto.imatge_url"
                                                                             required></v-text-field>
 
                                                                     </v-col>
                                                                     <v-col cols="12" sm="4">
                                                                         <v-text-field label="Stock*"
-                                                                            v-model="producto.stock" type="number"
+                                                                            v-model="producto.estoc" type="number"
                                                                             required></v-text-field>
                                                                     </v-col>
                                                                     <v-col cols="12" sm="4">
                                                                         <v-select :items="['Disponible', 'No disponible']"
                                                                             label="Estado*" required
-                                                                            v-model="producto.estado"></v-select>
+                                                                            v-model="producto.estat"></v-select>
                                                                     </v-col>
                                                                 </v-row>
                                                             </v-container>
