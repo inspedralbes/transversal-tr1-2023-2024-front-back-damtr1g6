@@ -240,7 +240,7 @@ app.post("/insertProducte", async (req, res) => {
     });
 
 
-    res.json(productos)
+    res.json(producto)
 })
 /* --- CERRAR GESTION DE COMANDAS --- */
 
@@ -419,6 +419,23 @@ function insertProductDBComanda(idProducto, cantidad, idComanda) {
             console.log(result)
         }
         disconnectDB(con);
+    });
+}
+
+function selectProductsComanda(idComanda) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var selectSql = `SELECT FROM Contiene WHERE id_comanda = ${idComanda}`;
+
+        con.query(selectSql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                io.emit('comandas', comandas);
+                resolve(result);
+            }
+            disconnectDB(con);
+        });
     });
 }
 
