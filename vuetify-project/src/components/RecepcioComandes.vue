@@ -26,7 +26,13 @@ export default {
         },
         extraerValorEntreParentesis(texto) {
             const expresionRegular = /\((\d+)\)/;
-            return texto.match(expresionRegular);
+            const resultado = texto.match(expresionRegular);
+
+            if (resultado && resultado.length > 1) {
+                return resultado[1];
+            } else {
+                return null;
+            }
         }
     },
     computed: {
