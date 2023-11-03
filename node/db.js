@@ -230,7 +230,6 @@ app.post("/createComanda", async (req, res) => {
 
 app.post("/insertProducte", async (req, res) => {
     const producto = req.body;
-    console.log(producto);
     await insertProductDBComanda(producto.idProducto, producto.cantidad, producto.idComanda);
 
     var productoEliminarStock = await selectDBProducteID(producto.idProducto);
@@ -238,7 +237,10 @@ app.post("/insertProducte", async (req, res) => {
     updateDBProducto(productoEliminarStock[0]);
 
     res.json(producto)
-})
+});
+
+
+
 /* --- CERRAR GESTION DE COMANDAS --- */
 
 /* --- GESTION DE IMAGENES --- */
@@ -416,6 +418,23 @@ function insertProductDBComanda(idProducto, cantidad, idComanda) {
             console.log(result)
         }
         disconnectDB(con);
+    });
+}
+
+function selectProductsComanda(idComanda) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var selectSql = `SELECT FROM Contiene WHERE id_comanda = ${idComanda}`;
+
+        con.query(selectSql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                io.emit('comandas', comandas);
+                resolve(result);
+            }
+            disconnectDB(con);
+        });
     });
 }
 
