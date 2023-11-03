@@ -31,7 +31,7 @@ export default {
     },
     computed: {
         comandas() {
-            let comandas = state.comandas[0].filter(comanda => comanda.estado_comanda == "Recibida");
+            let comandas = state.comandas[0].filter(comanda => comanda.estado_comanda == "Rebuda");
 
             for (let i = 0; i < comandas.length; i++) {
                 if (this.idMostrar[i] == undefined) {
@@ -61,7 +61,7 @@ export default {
                         </v-card-text>
                         <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
                         <v-card-actions>
-                            <v-btn @click="changeState(comanda.id_comanda, 'Procesando', index)">ACCEPTAR</v-btn>
+                            <v-btn @click="changeState(comanda.id_comanda, 'Processant', index)">ACCEPTAR</v-btn>
                             <v-btn @click="deleteComanda(comanda.id_comanda, index)">DENEGAR</v-btn>
                             <v-spacer></v-spacer>
                             <v-btn @click="mostrar(index)">DETALLS</v-btn>

@@ -110,7 +110,7 @@ function updateStateComandas(comandas, idComanda, nuevoEstado) {
 
     comandas[comandaIndex].estado_comanda = nuevoEstado;
 
-    if (nuevoEstado == "Procesando") {
+    if (nuevoEstado == "Processant") {
         comandas[comandaIndex].time = "green";
         countTimeComanda(comandas, comandaIndex);
     }
@@ -422,7 +422,7 @@ function insertProductDBComanda(idProducto, cantidad, idComanda) {
 function insertDBComanda(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("Recibida", ${id}, "No comments.")`;
+        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("Rebuda", ${id}, "No comments.")`;
 
         con.query(sql, function (err, result) {
             if (err) {
@@ -443,7 +443,7 @@ function insertDBComanda(id) {
                     } else {
                         comandas.push(comandaResult[0]);
                         io.emit('comandas', comandas);
-                        resolve(comandaResult[0].id);
+                        resolve(comandaResult[0].id_comanda);
                     }
                 });
             }

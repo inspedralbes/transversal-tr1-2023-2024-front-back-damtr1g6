@@ -37,7 +37,7 @@ export default {
                         </v-card-title>
                         <v-card-text v-if="comanda.importe_total != null"><b>{{ comanda.estado_comanda }}</b></v-card-text>
                         <v-card-actions>
-                            <v-btn @click="changeState(comanda.id_comanda, 'Recogida')">RECOLLIR</v-btn>
+                            <v-btn @click="changeState(comanda.id_comanda, 'Recollida')">RECOLLIR</v-btn>
                             <v-spacer></v-spacer>
                             <v-btn @click="mostrar(comanda.id_comanda)">DETALLS</v-btn>
                         </v-card-actions>

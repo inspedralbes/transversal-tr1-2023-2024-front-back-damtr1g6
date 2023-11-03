@@ -14,7 +14,7 @@ export default {
     },
     computed: {
         comandas() {
-            return state.comandas[0].filter(comanda => comanda.estado_comanda == "Procesando");
+            return state.comandas[0].filter(comanda => comanda.estado_comanda == "Processant");
         }
     },
     mounted() {
