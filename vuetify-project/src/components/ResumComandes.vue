@@ -1,7 +1,7 @@
+<script setup>
+import { state, socket } from '@/services/socket';
+</script>
 <script>
-import { getComandes } from '@/services/communicationManager';
-import { socket, state } from '@/services/socket';
-
 export default {
     data: () => ({
         show: false
@@ -37,7 +37,7 @@ export default {
                         </v-card-title>
                         <v-card-text v-if="comanda.importe_total != null"><b>{{ comanda.estado_comanda }}</b></v-card-text>
                         <v-card-actions>
-                            <v-btn @click="changeState(comanda.id_comanda, 'Recogida')">RECOLLIR</v-btn>
+                            <v-btn @click="changeState(comanda.id_comanda, 'Recollida')">RECOLLIR</v-btn>
                             <v-spacer></v-spacer>
                             <v-btn @click="mostrar(comanda.id_comanda)">DETALLS</v-btn>
                         </v-card-actions>
@@ -46,10 +46,10 @@ export default {
 
                         <div v-if="show === true && idMostrar == comanda.id_comanda">
                             <v-card>
-                                <v-card-title v-if="comanda.productos = ! null">
-                                    Productes: {{ comanda.productos.length }}
+                                <v-card-title v-if="comanda.productes = ! null">
+                                    Productes: {{ comanda.productes.length }}
                                 </v-card-title>
-                                <v-card-text v-for="(producto, index) in comanda.productos">
+                                <v-card-text v-for="(producto, index) in comanda.productes">
                                     {{ index + 1 }}. {{ producto }}
                                 </v-card-text>
                             </v-card>

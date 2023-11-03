@@ -90,6 +90,7 @@ io.on('connection', async (socket) => {
         updateStateDB(comanda.id, comanda.state);
         updateStateComandas(comandas, comanda.id, comanda.state);
 
+        console.log(comandas);
         io.emit('comandas', comandas);
     });
 
@@ -110,7 +111,7 @@ function updateStateComandas(comandas, idComanda, nuevoEstado) {
 
     comandas[comandaIndex].estado_comanda = nuevoEstado;
 
-    if (nuevoEstado == "Procesando") {
+    if (nuevoEstado == "Processant") {
         comandas[comandaIndex].time = "green";
         countTimeComanda(comandas, comandaIndex);
     }

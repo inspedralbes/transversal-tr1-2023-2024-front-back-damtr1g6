@@ -1,5 +1,4 @@
 <script setup>
-import { getComandes } from '@/services/communicationManager';
 import { state, socket } from '@/services/socket';
 </script>
 <script>
@@ -14,7 +13,7 @@ export default {
     },
     computed: {
         comandas() {
-            return state.comandas[0].filter(comanda => comanda.estado_comanda == "Procesando");
+            return state.comandas[0].filter(comanda => comanda.estado_comanda == "Processant");
         }
     },
     mounted() {
