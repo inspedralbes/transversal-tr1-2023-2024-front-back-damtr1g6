@@ -69,7 +69,7 @@ export default {
             }
         },
         getImageName(img) {
-            return "http://localhost:3672/api/images/" + img;
+            return "http://dam.inspedralbes.cat:3672/api/images/" + img;
         }
     }
 }

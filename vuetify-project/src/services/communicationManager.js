@@ -1,7 +1,7 @@
 import { socket } from '@/services/socket';
 
 export async function getProductes() {
-    const response = await fetch('http://localhost:3672/productos');
+    const response = await fetch('http://dam.inspedralbes.cat:3672/productos');
     const productos = await response.json();
     return productos;
 }
@@ -18,7 +18,7 @@ export function getComandes() {
 
 export async function addProducte(dadaProducte) {
     console.log("addProducte::datos recibidos: ", dadaProducte, typeof dadesPregunta)
-    const response = await fetch(`http://localhost:3672/addProducto`,
+    const response = await fetch(`http://dam.inspedralbes.cat:3672/addProducto`,
         {
             method: 'POST', headers: {
                 'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ export async function updateProducte(dadaProducte) {
     formData.append("stock", dadaProducte.stock);
     formData.append("image", dadaProducte.image);
 
-    const response = await fetch(`http://localhost:3672/updateProducto`, {
+    const response = await fetch(`http://dam.inspedralbes.cat:3672/updateProducto`, {
         method: 'POST',
         mode: 'cors',
         body: formData,
@@ -47,7 +47,7 @@ export async function updateProducte(dadaProducte) {
 
 export async function deleteProducte(id) {
     let exist;
-    await fetch('http://localhost:3672/deleteProducto/' + id,
+    await fetch('http://dam.inspedralbes.cat:3672/deleteProducto/' + id,
         { method: 'DELETE' })
         .then(response => response.json())
         .then(data => exist = data);
