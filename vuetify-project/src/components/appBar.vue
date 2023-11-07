@@ -1,6 +1,6 @@
 <script setup>
 import { getProductes, addProducte, deleteProducte } from '@/services/communicationManager';
-import { socket } from '@/services/socket';
+import { socket, state } from '@/services/socket';
 import Producto from "../components/Producto.vue";
 import ListadoComandes from "../components/ListadoComandes.vue";
 import ResumComandes from "../components/ResumComandes.vue"
@@ -28,12 +28,13 @@ export default {
     }),
     mounted() {
         socket.emit('getComandas', {});
-
-        getProductes()
-            .then((data) => {
-                this.productos = data;
-                this.searchProduct = data;
-            })
+        socket.emit('getProductes', {});
+        
+    },
+    computed: {
+        productes() {
+            this.searchProduct = state.productes[0]
+        }
     },
     methods: {
         async addProduct() {
@@ -62,9 +63,9 @@ export default {
         search() {
             this.searchProduct = {};
             if (this.buscar == "") {
-                this.searchProduct = this.productos;
+                this.searchProduct = state.productes[0]
             } else {
-                this.searchProduct = this.productos.filter(producto => producto.nombre.toLowerCase().includes(this.buscar.toLowerCase()));
+                this.searchProduct = state.productes[0].filter(producto => producto.nombre.toLowerCase().includes(this.buscar.toLowerCase()));
             }
         },
         getImageName(img) {
@@ -171,7 +172,12 @@ export default {
                 </v-form>
                 <v-row>
                     <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
-                        v-for="producto in this.searchProduct">
+                        v-if="buscar.length == 0" v-for="producto in state.productes[0]">
+                        <Producto :producto="producto" :callGetProductes="callGetProductes"
+                            :imageName="getImageName(producto.imagen_url)" />
+                    </v-col>
+                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
+                        v-else v-for="producto in this.searchProduct">
                         <Producto :producto="producto" :callGetProductes="callGetProductes"
                             :imageName="getImageName(producto.imagen_url)" />
                     </v-col>

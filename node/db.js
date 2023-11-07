@@ -53,6 +53,15 @@ let comandas = [];
 
 cargarComandas();
 
+let productos = [];
+
+cargarProductos();
+
+async function cargarProductos() {
+    productos = await selectDBProductes();
+    console.log(productos);
+}
+
 async function cargarComandas() {
     comandas = await selectComanda();
     comandas.forEach(comanda => {
@@ -86,6 +95,16 @@ io.on('connection', async (socket) => {
         io.emit('comandas', comandas);
     });
 
+    socket.on('getProductes', async (id) => {
+        io.emit('productes', productos);
+    });
+
+    socket.on('changeStateProducte', async (producto) => {
+        updateDBProducto(producto);
+        updateStateProducte(productos, producto);
+        io.emit('productes', productos)
+    })
+
     socket.on('changeState', async (comanda) => {
         updateStateDB(comanda.id, comanda.state);
         updateStateComandas(comandas, comanda.id, comanda.state);
@@ -104,6 +123,12 @@ io.on('connection', async (socket) => {
 
     });
 });
+
+function updateStateProducte(productes, producte) {
+    var indexProducte = productes.findIndex(producto => producto.id === producte.id)
+
+    productes[indexProducte].estado = producte.estado;
+}
 
 function updateStateComandas(comandas, idComanda, nuevoEstado) {
     const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
@@ -152,7 +177,7 @@ app.get("/productos", (req, res) => {
         })
 });
 
-app.post("/addProducto", (req, res) => {
+app.post("/addProducto", async (req, res) => {
     const producto = req.body;
     const nombre = producto.nombre
     const descripcion = producto.descripcion
@@ -161,8 +186,9 @@ app.post("/addProducto", (req, res) => {
     const stock = producto.stock
     const estado = producto.estado
 
-
-    insertDBProductos(nombre, descripcion, precio, imagen_url, stock, estado)
+    await insertDBProductos(nombre, descripcion, precio, imagen_url, stock, estado);
+    await cargarProductos();
+    io.emit('productes', productos)
     res.json(producto)
 })
 
@@ -170,6 +196,8 @@ app.delete("/deleteProducto/:id", async (req, res) => {
     const id = req.params.id;
     try {
         const success = await deleteDBProductos(id);
+        await cargarProductos();
+        io.emit('productes', productos);
         if (success) {
             res.send(true);
         } else {
@@ -266,18 +294,25 @@ app.get("/api/images/:name", (req, res) => {
     res.sendFile(path.resolve("./images/" + req.params.name));
 })
 
-app.post('/updateProducto', upload.single('image'), (req, res) => {
+app.post('/updateProducto', upload.single('image'), async (req, res) => {
     let producto = req.body;
 
     if (req.file != undefined) {
         if (req.file.filename != req.body.imagen_url) {
             const imagePath = `images/${req.body.imagen_url}`;
-            fs.unlinkSync(imagePath);
+            try{
+                fs.unlinkSync(imagePath);
+            }catch(err){
+                console.log(err);
+            }
+            
             producto.imagen_url = req.file.filename;
         }
     }
 
-    updateDBProducto(producto);
+    await updateDBProducto(producto);
+    await cargarProductos();
+    io.emit('productes', productos)
     res.send({ "message": "Producto actualizado" });
 });
 
@@ -335,33 +370,41 @@ function selectDBProductes() {
 }
 
 function insertDBProductos(nombre, descripcion, precio, imagen_url, stock, estado) {
-    let con = conectDB();
-    var sql = "INSERT INTO Productos (nombre, descripcion, precio, imagen_url, stock, estado)VALUES ('" + nombre + "', '" + descripcion + "', " + precio + ", '" + imagen_url + "', " + stock + ", '" + estado + "');";
-    con.query(sql, function (err, result) {
-        if (err) {
-            console.log("error insert producto");
-        }
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = "INSERT INTO Productos (nombre, descripcion, precio, imagen_url, stock, estado)VALUES ('" + nombre + "', '" + descripcion + "', " + precio + ", '" + imagen_url + "', " + stock + ", '" + estado + "');";
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+        disconnectDB(con);
     });
-    disconnectDB(con);
 }
 
 function updateDBProducto(producto) {
-    const id = producto.id
-    const nombre = producto.nombre
-    const descripcion = producto.descripcion
-    const precio = producto.precio
-    const imagen_url = producto.imagen_url
-    const stock = producto.stock
-    const estado = producto.estado
+    return new Promise((resolve, reject) => {
+        const id = producto.id
+        const nombre = producto.nombre
+        const descripcion = producto.descripcion
+        const precio = producto.precio
+        const imagen_url = producto.imagen_url
+        const stock = producto.stock
+        const estado = producto.estado
 
-    let con = conectDB();
-    var sql = "UPDATE Productos SET nombre='" + nombre + "', descripcion='" + descripcion + "', precio=" + precio + ", imagen_url='" + imagen_url + "', stock=" + stock + ", estado='" + estado + "' WHERE id=" + id;
-    con.query(sql, function (err, result) {
-        if (err) {
-            console.log("error update producto." + err);
-        }
+        let con = conectDB();
+        var sql = "UPDATE Productos SET nombre='" + nombre + "', descripcion='" + descripcion + "', precio=" + precio + ", imagen_url='" + imagen_url + "', stock=" + stock + ", estado='" + estado + "' WHERE id=" + id;
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+        disconnectDB(con);
     });
-    disconnectDB(con);
 }
 
 
