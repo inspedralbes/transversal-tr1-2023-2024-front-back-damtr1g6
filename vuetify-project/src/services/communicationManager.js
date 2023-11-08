@@ -17,16 +17,8 @@ export function getComandes() {
 }
 
 export async function addProducte(dadaProducte) {
-    var formData = new FormData();
-    formData.append("id", dadaProducte.id);
-    formData.append("nombre", dadaProducte.nombre);
-    formData.append("descripcion", dadaProducte.descripcion);
-    formData.append("estado", dadaProducte.estado);
-    formData.append("precio", dadaProducte.precio);
-    formData.append("stock", dadaProducte.stock);
-    formData.append("image", dadaProducte.image);
-
-    const response = await fetch(`http://dam.inspedralbes.cat:3672/addProducto`,
+    console.log("addProducte::datos recibidos: ", dadaProducte, typeof dadesPregunta)
+    const response = await fetch(`http://localhost:3672/addProducto`,
         {
             method: 'POST',
             mode: 'cors',
