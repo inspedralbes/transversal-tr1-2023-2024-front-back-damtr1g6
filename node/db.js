@@ -44,6 +44,125 @@ const dbConfig = {
     database: "a22jhepincre_PR1Tienda"
 };
 
+/* --- Socket.io --- */
+
+let comandas = [];
+
+cargarComandas();
+
+let productos = [];
+
+cargarProductos();
+
+async function cargarProductos() {
+    productos = await selectDBProductes();
+}
+
+async function cargarComandas() {
+    comandas = await selectComanda();
+    comandas.forEach(comanda => {
+        if (comanda.productos != null) {
+            var productos = comanda.productos.split(",");
+            var productosPrecio = []
+            productos.forEach(producto => {
+                productosPrecio.push(producto.split("-"));
+            });
+            var res = []
+            productosPrecio.forEach(p => {
+                var pr = {
+                    nombre: p[0],
+                    precio: p[1]
+                }
+                res.push(pr)
+            });
+
+            comanda.productos = res;
+        }
+
+    })
+
+    for (let i = 0; i < comandas.length; i++) {
+        comandas[i].time = "green";
+    }
+}
+
+io.on('connection', async (socket) => {
+    socket.on('getComandas', async (id) => {
+        io.emit('comandas', comandas);
+    });
+
+    socket.on('getProductes', async (id) => {
+        io.emit('productes', productos);
+    });
+
+    socket.on('changeStateProducte', async (producto) => {
+        updateDBProducto(producto);
+        updateStateProducte(productos, producto);
+        io.emit('productes', productos)
+    })
+
+    socket.on('changeState', async (comanda) => {
+        updateStateDB(comanda.id, comanda.state);
+        updateStateComandas(comandas, comanda.id, comanda.state);
+
+        io.emit('comandas', comandas);
+    });
+
+    socket.on('deleteComanda', async (id) => {
+        deleteComandaDB(id);
+        deleteComandaComandas(comandas, id);
+
+        io.emit('comandas', comandas);
+    });
+
+    socket.on('disconnect', () => {
+
+    });
+});
+
+function updateStateProducte(productes, producte) {
+    var indexProducte = productes.findIndex(producto => producto.id === producte.id)
+
+    productes[indexProducte].estado = producte.estado;
+}
+
+function updateStateComandas(comandas, idComanda, nuevoEstado) {
+    const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
+
+    comandas[comandaIndex].estado_comanda = nuevoEstado;
+
+    if (nuevoEstado == "Processant") {
+        comandas[comandaIndex].time = "green";
+        countTimeComanda(comandas, comandaIndex);
+    }
+
+    return comandas;
+}
+
+function deleteComandaComandas(comandas, idComanda) {
+    const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
+
+    comandas.splice(comandaIndex, 1);
+
+    return comandas;
+}
+
+async function countTimeComanda(comandas, comandaIndex) {
+    setTimeout(() => {
+        comandas[comandaIndex].time = "yellow";
+        io.emit('comandas', comandas);
+
+        setTimeout(() => {
+            comandas[comandaIndex].time = "red";
+            io.emit('comandas', comandas);
+        }, 10000);
+    }, 10000);
+}
+
+/* --- CERRAR Socket.io --- */
+
+/* --- GESTION DE PRODUCTOS --- */
+
 app.get("/productos", (req, res) => {
     selectDBProductes()
         .then((data) => {
@@ -54,20 +173,36 @@ app.get("/productos", (req, res) => {
         })
 });
 
-app.post("/addProducto", async (req, res) => {
-    const producto = req.body;
-    const nombre = producto.nombre
-    const descripcion = producto.descripcion
-    const precio = producto.precio
-    const imagen_url = producto.imagen_url
-    const stock = producto.stock
-    const estado = producto.estado
+app.post("/addProducto", upload.single('image'), async (req, res) => {
+    let producto = req.body;
 
-    await insertDBProductos(nombre, descripcion, precio, imagen_url, stock, estado);
+    await insertDBProductos(producto.nombre, producto.descripcion, producto.precio, req.file.filename, producto.stock, producto.estado);
+    await cargarProductos();
+    io.emit('productes', productos);
+    res.json(producto);
+});
+
+app.post('/updateProducto', upload.single('image'), async (req, res) => {
+    let producto = req.body;
+
+    if (req.file != undefined) {
+        if (req.file.filename != req.body.imagen_url) {
+            const imagePath = `images/${req.body.imagen_url}`;
+            try {
+                fs.unlinkSync(imagePath);
+            } catch (err) {
+                console.log(err);
+            }
+
+            producto.imagen_url = req.file.filename;
+        }
+    }
+
+    await updateDBProducto(producto);
     await cargarProductos();
     io.emit('productes', productos)
-    res.json(producto)
-})
+    res.send({ "message": "Producto actualizado" });
+});
 
 app.delete("/deleteProducto/:id", async (req, res) => {
     const id = req.params.id;
@@ -163,6 +298,30 @@ app.post("/insertProducte", async (req, res) => {
 
     procesarProductos();
 })
+
+app.get('/comandaID/:id_user', (req, res) => {
+    console.log("aaaaaaaaa");
+    const comandaID = req.params.id_user;
+    console.log(req.params.id_user);
+    selectComandaByID(comandaID)
+        .then(result => {
+            console.log(result);
+            if (result.length > 0) {
+                // console.log(result);
+                // result.forEach(comanda => {
+                //     var productos = desconcatenador(comanda.productos);
+                //     comanda.producto = productos;
+                //     console.log(comanda);
+                // });
+            } else {
+            }
+        })
+        .catch(error => {
+            res.status(500).json({ error: 'Error en la consulta a la base de datos' });
+        });
+    res.json(productos)
+});
+
 /* --- CERRAR GESTION DE COMANDAS --- */
 
 /* --- GESTION DE IMAGENES --- */
@@ -234,6 +393,29 @@ function selectDBProducteID(id) {
         });
         disconnectDB(con);
     });
+}
+
+function selectComandaByID(id_user) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `SELECT CD.id_comanda, GROUP_CONCAT("(", CO.cantidad, ")", P.nombre, "-", P.precio) AS productos
+        FROM (
+            SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+            FROM Comanda
+            WHERE id_user = ${id_user}
+        ) AS CD
+        LEFT JOIN Contiene AS CO ON CD.id_comanda = CO.id_comanda
+        LEFT JOIN Productos AS P ON CO.id_producto = P.id
+        GROUP BY CD.id_comanda, CD.estado_comanda;`
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        })
+    })
+
 }
 function selectDBProductes() {
     return new Promise((resolve, reject) => {

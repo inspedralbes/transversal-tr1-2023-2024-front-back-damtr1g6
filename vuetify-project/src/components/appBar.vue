@@ -1,5 +1,5 @@
 <script setup>
-import { getProductes, addProducte, deleteProducte } from '@/services/communicationManager';
+import { addProducte, deleteProducte } from '@/services/communicationManager';
 import { socket, state } from '@/services/socket';
 import Producto from "../components/Producto.vue";
 import ListadoComandes from "../components/ListadoComandes.vue";
@@ -10,7 +10,6 @@ import RecepcioComandes from "../components/RecepcioComandes.vue"
 <script>
 export default {
     data: () => ({
-        productos: [],
         searchProduct: [],
         producto: {
             "nombre": "",
@@ -22,6 +21,7 @@ export default {
         },
         comandes: [],
         dialog: false,
+        showConfirmation: false,
         show: false,
         screen: "main",
         buscar: "",
@@ -39,8 +39,9 @@ export default {
     },
     methods: {
         async addProduct() {
-            await addProducte(this.producto)
-
+            await addProducte(this.producto);
+            this.showConfirmation = true;
+            console.log(this.showConfirmation);
         },
         async deleteP(id) {
             await deleteProducte(id);
