@@ -16,9 +16,9 @@ export default {
             "nombre": "",
             "descripcion": "",
             "precio": 0,
-            "imagen_url": "",
             "stock": 0,
-            "estado": ""
+            "estado": "",
+            "image": "",
         },
         comandes: [],
         dialog: false,
@@ -29,7 +29,7 @@ export default {
     mounted() {
         socket.emit('getComandas', {});
         socket.emit('getProductes', {});
-        
+
     },
     computed: {
         productes() {
@@ -39,26 +39,14 @@ export default {
     methods: {
         async addProduct() {
             await addProducte(JSON.stringify(this.producto))
-            getProductes()
-                .then((data) => {
-                    this.productos = data;
-                    this.searchProduct = data;
-                })
+            
         },
         async deleteP(id) {
             await deleteProducte(id);
-            getProductes()
-                .then((data) => {
-                    this.productos = data;
-                    this.searchProduct = data;
-                })
+            
         },
         async callGetProductes() {
-            getProductes()
-                .then((data) => {
-                    this.productos = data;
-                    this.searchProduct = data;
-                })
+            
         },
         search() {
             this.searchProduct = {};
@@ -69,8 +57,12 @@ export default {
             }
         },
         getImageName(img) {
-            return "http://localhost:3672/api/images/" + img;
-        }
+            return "http://dam.inspedralbes.cat:3672/api/images/" + img;
+        },
+        handleFileUpload(event) {
+            const file = event.target.files[0];
+            this.producto.image = file;
+        },
     }
 }
 
@@ -130,9 +122,9 @@ export default {
                                                                             required></v-text-field>
                                                                     </v-col>
                                                                     <v-col cols="12" sm="4">
-                                                                        <v-text-field label="Imagen*"
-                                                                            v-model="producto.imagen_url"
-                                                                            required></v-text-field>
+                                                                        <v-file-input accept="image/*" label="Image"
+                                                                            @change="handleFileUpload"
+                                                                            require></v-file-input>
 
                                                                     </v-col>
                                                                     <v-col cols="12" sm="4">
@@ -171,13 +163,13 @@ export default {
                     </v-container>
                 </v-form>
                 <v-row>
-                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
-                        v-if="buscar.length == 0" v-for="producto in state.productes[0]">
+                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-if="buscar.length == 0"
+                        v-for="producto in state.productes[0]">
                         <Producto :producto="producto" :callGetProductes="callGetProductes"
                             :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
-                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
-                        v-else v-for="producto in this.searchProduct">
+                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-else
+                        v-for="producto in this.searchProduct">
                         <Producto :producto="producto" :callGetProductes="callGetProductes"
                             :imageName="getImageName(producto.imagen_url)" />
                     </v-col>

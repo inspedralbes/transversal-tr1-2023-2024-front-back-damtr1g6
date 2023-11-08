@@ -177,20 +177,36 @@ app.get("/productos", (req, res) => {
         })
 });
 
-app.post("/addProducto", async (req, res) => {
-    const producto = req.body;
-    const nombre = producto.nombre
-    const descripcion = producto.descripcion
-    const precio = producto.precio
-    const imagen_url = producto.imagen_url
-    const stock = producto.stock
-    const estado = producto.estado
+app.post("/addProducto", upload.single('image'), async (req, res) => {
+    let producto = req.body;
 
-    await insertDBProductos(nombre, descripcion, precio, imagen_url, stock, estado);
+    await insertDBProductos(producto.nombre, producto.descripcion, producto.precio, req.file.filename, producto.stock, producto.estado);
+    await cargarProductos();
+    io.emit('productes', productos);
+    res.json(producto);
+});
+
+app.post('/updateProducto', upload.single('image'), async (req, res) => {
+    let producto = req.body;
+
+    if (req.file != undefined) {
+        if (req.file.filename != req.body.imagen_url) {
+            const imagePath = `images/${req.body.imagen_url}`;
+            try {
+                fs.unlinkSync(imagePath);
+            } catch (err) {
+                console.log(err);
+            }
+
+            producto.imagen_url = req.file.filename;
+        }
+    }
+
+    await updateDBProducto(producto);
     await cargarProductos();
     io.emit('productes', productos)
-    res.json(producto)
-})
+    res.send({ "message": "Producto actualizado" });
+});
 
 app.delete("/deleteProducto/:id", async (req, res) => {
     const id = req.params.id;
@@ -293,28 +309,6 @@ app.post("/insertProducte", async (req, res) => {
 app.get("/api/images/:name", (req, res) => {
     res.sendFile(path.resolve("./images/" + req.params.name));
 })
-
-app.post('/updateProducto', upload.single('image'), async (req, res) => {
-    let producto = req.body;
-
-    if (req.file != undefined) {
-        if (req.file.filename != req.body.imagen_url) {
-            const imagePath = `images/${req.body.imagen_url}`;
-            try{
-                fs.unlinkSync(imagePath);
-            }catch(err){
-                console.log(err);
-            }
-            
-            producto.imagen_url = req.file.filename;
-        }
-    }
-
-    await updateDBProducto(producto);
-    await cargarProductos();
-    io.emit('productes', productos)
-    res.send({ "message": "Producto actualizado" });
-});
 
 /* --- CERRAR GESTION DE IMAGENES --- */
 
