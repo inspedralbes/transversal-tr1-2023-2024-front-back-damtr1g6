@@ -42,6 +42,8 @@ export default {
     },
     methods: {
         async addProduct() {
+            this.dialogSend = true;
+            this.dialogSendMessage = "loading";
             let response = await addProducte(this.producto);
 
             this.producto = {
@@ -59,7 +61,6 @@ export default {
             } else {
                 this.dialogSendMessage = "error";
             }
-            this.dialogSend = true;
         },
         async deleteP(id) {
             await deleteProducte(id);
