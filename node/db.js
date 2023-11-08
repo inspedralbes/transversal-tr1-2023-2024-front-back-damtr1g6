@@ -95,6 +95,10 @@ io.on('connection', async (socket) => {
         io.emit('comandas', comandas);
     });
 
+    socket.on('getComandaByID', async(id) =>{
+        io.emit('comanda', comandas.filter(comanda => comanda.id == id))
+    })
+
     socket.on('getProductes', async (id) => {
         io.emit('productes', productos);
     });
