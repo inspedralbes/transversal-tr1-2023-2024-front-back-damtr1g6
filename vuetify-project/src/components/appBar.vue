@@ -59,13 +59,13 @@ export default {
             }
         },
         getImageName(img) {
-            return "http://localhost:3672/api/images/" + img;
+            return "http://dam.inspedralbes.cat:3672/api/images/" + img;
         },
         handleFileUpload(event) {
             const file = event.target.files[0];
             this.producto.image = file;
         }, getGraphics(img) {
-            return "http://localhost:3672/api/graphics/" + img;
+            return "http://dam.inspedralbes.cat:3672/api/graphics/" + img;
         },
         openModal() {
             this.modal = true;

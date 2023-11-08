@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import { reactive } from "vue";
 
-export const socket = io.connect('http://localhost:3672');
+export const socket = io.connect('http://dam.inspedralbes.cat:3672');
 
 export const state = reactive({
     comandas: [],
