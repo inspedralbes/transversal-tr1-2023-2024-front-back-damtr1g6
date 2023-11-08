@@ -20,12 +20,9 @@ export default {
             if (!deleted) {
                 this.modalExist = true;
             }
-
-            this.callGetProductes();
         },
         async updateP(producte) {
             await updateProducte(producte);
-            this.callGetProductes();
         },
         handleFileUpload(event) {
             const file = event.target.files[0];

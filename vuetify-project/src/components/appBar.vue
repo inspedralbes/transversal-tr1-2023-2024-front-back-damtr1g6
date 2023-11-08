@@ -1,5 +1,5 @@
 <script setup>
-import { getProductes, addProducte, deleteProducte } from '@/services/communicationManager';
+import { addProducte, deleteProducte } from '@/services/communicationManager';
 import { socket, state } from '@/services/socket';
 import Producto from "../components/Producto.vue";
 import ListadoComandes from "../components/ListadoComandes.vue";
@@ -10,7 +10,6 @@ import RecepcioComandes from "../components/RecepcioComandes.vue"
 <script>
 export default {
     data: () => ({
-        productos: [],
         searchProduct: [],
         producto: {
             "nombre": "",
@@ -22,6 +21,7 @@ export default {
         },
         comandes: [],
         dialog: false,
+        showConfirmation: false,
         show: false,
         screen: "main",
         buscar: ""
@@ -29,7 +29,7 @@ export default {
     mounted() {
         socket.emit('getComandas', {});
         socket.emit('getProductes', {});
-        
+
     },
     computed: {
         productes() {
@@ -38,27 +38,12 @@ export default {
     },
     methods: {
         async addProduct() {
-            await addProducte(JSON.stringify(this.producto))
-            getProductes()
-                .then((data) => {
-                    this.productos = data;
-                    this.searchProduct = data;
-                })
+            await addProducte(JSON.stringify(this.producto));
+            this.showConfirmation = true;
+            console.log(this.showConfirmation);
         },
         async deleteP(id) {
             await deleteProducte(id);
-            getProductes()
-                .then((data) => {
-                    this.productos = data;
-                    this.searchProduct = data;
-                })
-        },
-        async callGetProductes() {
-            getProductes()
-                .then((data) => {
-                    this.productos = data;
-                    this.searchProduct = data;
-                })
         },
         search() {
             this.searchProduct = {};
@@ -171,14 +156,14 @@ export default {
                     </v-container>
                 </v-form>
                 <v-row>
-                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
-                        v-if="buscar.length == 0" v-for="producto in state.productes[0]">
-                        <Producto :producto="producto" :callGetProductes="callGetProductes"
+                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-if="buscar.length == 0"
+                        v-for="producto in state.productes[0]">
+                        <Producto :producto="producto"
                             :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
-                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
-                        v-else v-for="producto in this.searchProduct">
-                        <Producto :producto="producto" :callGetProductes="callGetProductes"
+                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-else
+                        v-for="producto in this.searchProduct">
+                        <Producto :producto="producto"
                             :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
                 </v-row>
