@@ -3,8 +3,9 @@ import { getProductes, addProducte, deleteProducte } from '@/services/communicat
 import { socket, state } from '@/services/socket';
 import Producto from "../components/Producto.vue";
 import ListadoComandes from "../components/ListadoComandes.vue";
-import ResumComandes from "../components/ResumComandes.vue"
-import RecepcioComandes from "../components/RecepcioComandes.vue"
+import ResumComandes from "../components/ResumComandes.vue";
+import RecepcioComandes from "../components/RecepcioComandes.vue";
+import DialogoEnviar from "../components/DialogoEnviar.vue";
 </script>
 
 <script>
@@ -24,7 +25,8 @@ export default {
         dialog: false,
         show: false,
         screen: "main",
-        buscar: ""
+        buscar: "",
+        dialogSend: false,
     }),
     mounted() {
         socket.emit('getComandas', {});
@@ -33,20 +35,16 @@ export default {
     },
     computed: {
         productes() {
-            this.searchProduct = state.productes[0]
+            this.searchProduct = state.productes[0];
         }
     },
     methods: {
         async addProduct() {
             await addProducte(this.producto)
-
+            updateDialogSend(true);
         },
         async deleteP(id) {
             await deleteProducte(id);
-
-        },
-        async callGetProductes() {
-
         },
         search() {
             this.searchProduct = {};
@@ -63,6 +61,9 @@ export default {
             const file = event.target.files[0];
             this.producto.image = file;
         },
+        updateDialogSend(newValue) {
+            this.dialogSend = newValue;
+        }
     }
 }
 
@@ -83,6 +84,7 @@ export default {
 
         <v-main class="box-productos" v-if="screen === 'main'">
             <v-container>
+                <DialogoEnviar :dialogSend="dialogSend" @update:dialogSend="updateDialogSend" />
                 <v-form class="box-write">
                     <v-container>
                         <v-row>

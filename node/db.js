@@ -178,6 +178,9 @@ app.get("/productos", (req, res) => {
 
 app.post("/addProducto", upload.single('image'), async (req, res) => {
     let producto = req.body;
+    if (req.file == undefined) {
+        req.file.filename = "a.jpg";
+    }
 
     await insertDBProductos(producto.nombre, producto.descripcion, producto.precio, req.file.filename, producto.stock, producto.estado);
     await cargarProductos();
