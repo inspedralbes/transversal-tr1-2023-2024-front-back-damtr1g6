@@ -304,6 +304,30 @@ app.post("/insertProducte", async (req, res) => {
 
     procesarProductos();
 })
+
+app.get('/comandaID/:id_user', (req, res) => {
+    console.log("aaaaaaaaa");
+    const comandaID = req.params.id_user;
+    console.log(req.params.id_user);
+    selectComandaByID(comandaID)
+        .then(result => {
+            console.log(result);
+            if (result.length > 0) {
+                // console.log(result);
+                // result.forEach(comanda => {
+                //     var productos = desconcatenador(comanda.productos);
+                //     comanda.producto = productos;
+                //     console.log(comanda);
+                // });
+            } else {
+            }
+        })
+        .catch(error => {
+            res.status(500).json({ error: 'Error en la consulta a la base de datos' });
+        });
+    res.json(productos)
+});
+
 /* --- CERRAR GESTION DE COMANDAS --- */
 
 /* --- GESTION DE IMAGENES --- */
@@ -311,6 +335,28 @@ app.post("/insertProducte", async (req, res) => {
 app.get("/api/images/:name", (req, res) => {
     res.sendFile(path.resolve("./images/" + req.params.name));
 })
+
+app.post('/updateProducto', upload.single('image'), async (req, res) => {
+    let producto = req.body;
+
+    if (req.file != undefined) {
+        if (req.file.filename != req.body.imagen_url) {
+            const imagePath = `images/${req.body.imagen_url}`;
+            try{
+                fs.unlinkSync(imagePath);
+            }catch(err){
+                console.log(err);
+            }
+            
+            producto.imagen_url = req.file.filename;
+        }
+    }
+
+    await updateDBProducto(producto);
+    await cargarProductos();
+    io.emit('productes', productos)
+    res.send({ "message": "Producto actualizado" });
+});
 
 /* --- CERRAR GESTION DE IMAGENES --- */
 
@@ -349,6 +395,29 @@ function selectDBProducteID(id) {
         });
         disconnectDB(con);
     });
+}
+
+function selectComandaByID(id_user) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `SELECT CD.id_comanda, GROUP_CONCAT("(", CO.cantidad, ")", P.nombre, "-", P.precio) AS productos
+        FROM (
+            SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
+            FROM Comanda
+            WHERE id_user = ${id_user}
+        ) AS CD
+        LEFT JOIN Contiene AS CO ON CD.id_comanda = CO.id_comanda
+        LEFT JOIN Productos AS P ON CO.id_producto = P.id
+        GROUP BY CD.id_comanda, CD.estado_comanda;`
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        })
+    })
+
 }
 function selectDBProductes() {
     return new Promise((resolve, reject) => {
