@@ -4,11 +4,10 @@ const date = new Date();
 const path = require('path');
 const mysql = require('mysql2/promise');
 
-
-
 var express = require("express");
 var bodyP = require("body-parser");
 var cors = require("cors");
+const { log } = require('console');
 var app = express();
 const PORT = 3672;
 
@@ -269,7 +268,7 @@ async function getData() {
         if (!fs.existsSync(rutaArxiu)) {
             fs.mkdirSync(rutaArxiu);
         }
-       
+
         fs.writeFile(nomArxiu, JSON.stringify(datos), (err) => {
             if (err) {
                 console.error('Error al guardar los datos:', err);
@@ -278,7 +277,7 @@ async function getData() {
             }
         });
 
-        await con.end(); // Cierra la conexión a la base de datos
+        await con.end();
 
     } catch (error) {
         console.error('Error al obtener los datos:', error);
@@ -295,28 +294,73 @@ getData();
 
 //Esta función lo que hace es revisar si hay cambios en la bbdd y lo actualiza en el json
 async function vigilanteBaseDatos() {
-    const con =await mysql.createConnection(dbConfig);
+    const con = await mysql.createConnection(dbConfig);
 
     con.connect((err) => {
         if (err) {
-          console.error('Error al conectar a la base de datos:', err);
-          return;
-        }
-    
-        con.query('SELECT 1', (err) => {
-          if (err) {
-            console.error('Error al hacer una consulta a la base de datos:', err);
+            console.error('Error al conectar a la base de datos:', err);
             return;
-          }
-    
-          //"Salta la alarma" volvemos a cargar la base de datos
-          con.on('change', (table, changes) => {
-            getData();
-          });
+        }
+
+        con.query('SELECT 1', (err) => {
+            if (err) {
+                console.error('Error al hacer una consulta a la base de datos:', err);
+                return;
+            }
+
+            //"Salta la alarma" volvemos a cargar la base de datos
+            con.on('change', (table, changes) => {
+                getData();
+            });
         });
-      });
+    });
 }
 
 vigilanteBaseDatos();
+
+//Llamar al archivo python
+function graficos(){
+    return new Promise((resolve,reject) => {
+        var { spawn } = require("child_process");
+        var proceso = spawn("Python",["./stats.py"]);
+
+        proceso.on("close", (code) => {
+            if(code === 0){
+                resolve();
+            }else {
+                console.error(
+                    `${code}`
+                );
+                reject(
+                    `${code}`
+                );
+            }
+        });
+    });
+}
+
+
+app.get("/estadisticas", async (req, res) => {
+    await graficos();
+
+    // Define un array de objetos que representan las imágenes
+    const images = [
+        { id: 1, url: '/informes/estatComandes.jpg' },
+        { id: 2, url: '/informes/estatProd.jpg' },
+        { id: 3, url: '/informes/prodVSvendida.jpg' },
+        { id: 4, url: '/informes/quantComand.jpg' },
+        { id: 5, url: '/informes/quantProd.jpg' },
+        { id: 6, url: '/informes/stock.jpg' },
+    ];
+
+    // Devuelve el array de objetos como JSON en la respuesta
+    res.json({ images });
+    console.log("Rutas de imágenes enviadas: ", images); // Agregar un log aquí
+
+    console.log("a")
+});
+
+
+
 
 

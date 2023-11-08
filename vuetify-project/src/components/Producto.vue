@@ -31,6 +31,7 @@ export default {
 </script>
 
 <template>
+    
     <v-card style="height: 510px">
         <v-img src="https://img.freepik.com/fotos-premium/3d-burger-sandwich-for-social-media-post-7_351245-1478.jpg"
             height="380px" alter="no encontrado" cover></v-img>
