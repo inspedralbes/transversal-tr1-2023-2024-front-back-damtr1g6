@@ -27,6 +27,7 @@ export default {
         screen: "main",
         buscar: "",
         dialogSend: false,
+        dialogSendMessage: "",
     }),
     mounted() {
         socket.emit('getComandas', {});
@@ -41,10 +42,24 @@ export default {
     },
     methods: {
         async addProduct() {
-            await addProducte(this.producto);
+            let response = await addProducte(this.producto);
+
+            this.producto = {
+                "nombre": "",
+                "descripcion": "",
+                "precio": 0,
+                "stock": 0,
+                "estado": "",
+                "image": "",
+            };
+
             this.showConfirmation = true;
-            console.log(this.showConfirmation);
-            updateDialogSend(true);
+            if (response.message == undefined) {
+                this.dialogSendMessage = "";
+            } else {
+                this.dialogSendMessage = "error";
+            }
+            this.dialogSend = true;
         },
         async deleteP(id) {
             await deleteProducte(id);
@@ -87,7 +102,8 @@ export default {
 
         <v-main class="box-productos" v-if="screen === 'main'">
             <v-container>
-                <DialogoEnviar :dialogSend="dialogSend" @update:dialogSend="updateDialogSend" />
+                <DialogoEnviar :dialogSend="dialogSend" :dialogSendMessage="dialogSendMessage"
+                    :updateDialogSend="updateDialogSend" />
                 <v-form class="box-write">
                     <v-container>
                         <v-row>
@@ -168,15 +184,13 @@ export default {
                     </v-container>
                 </v-form>
                 <v-row>
-                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
-                        v-if="buscar.length == 0" v-for="producto in state.productes[0]">
-                        <Producto :producto="producto" :callGetProductes="callGetProductes"
-                            :imageName="getImageName(producto.imagen_url)" />
+                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-if="buscar.length == 0"
+                        v-for="producto in state.productes[0]">
+                        <Producto :producto="producto" :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
-                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
-                        v-else v-for="producto in this.searchProduct">
-                        <Producto :producto="producto" :callGetProductes="callGetProductes"
-                            :imageName="getImageName(producto.imagen_url)" />
+                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-else
+                        v-for="producto in this.searchProduct">
+                        <Producto :producto="producto" :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
                 </v-row>
             </v-container>

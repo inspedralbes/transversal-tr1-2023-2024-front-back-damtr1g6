@@ -177,15 +177,23 @@ app.get("/productos", (req, res) => {
 });
 
 app.post("/addProducto", upload.single('image'), async (req, res) => {
-    let producto = req.body;
-    if (req.file == undefined) {
-        req.file.filename = "a.jpg";
-    }
+    try {
+        let producto = req.body;
+        let nameImage;
 
-    await insertDBProductos(producto.nombre, producto.descripcion, producto.precio, req.file.filename, producto.stock, producto.estado);
-    await cargarProductos();
-    io.emit('productes', productos);
-    res.json(producto);
+        if (req.file == undefined) {
+            nameImage = "a.jpg";
+        } else {
+            nameImage = req.file.filename;
+        }
+
+        await insertDBProductos(producto.nombre, producto.descripcion, producto.precio, nameImage, producto.stock, producto.estado);
+        await cargarProductos();
+        io.emit('productes', productos);
+        res.json(producto);
+    } catch (error) {
+        res.json({ message: "error" });
+    }
 });
 
 app.post('/updateProducto', upload.single('image'), async (req, res) => {
@@ -342,12 +350,12 @@ app.post('/updateProducto', upload.single('image'), async (req, res) => {
     if (req.file != undefined) {
         if (req.file.filename != req.body.imagen_url) {
             const imagePath = `images/${req.body.imagen_url}`;
-            try{
+            try {
                 fs.unlinkSync(imagePath);
-            }catch(err){
+            } catch (err) {
                 console.log(err);
             }
-            
+
             producto.imagen_url = req.file.filename;
         }
     }

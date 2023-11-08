@@ -1,11 +1,6 @@
 <script>
 export default {
-    props: {
-        dialogSend: {
-            type: Boolean,
-            required: true
-        }
-    },
+    props: ["dialogSend", "dialogSendMessage", "updateDialogSend"],
     data() {
         return {
             dialogVisible: this.dialogSend
@@ -21,26 +16,32 @@ export default {
 
 
 <template>
-    <v-dialog v-model="dialogVisible" persistent width="600" @input="$emit('update:dialogSend', dialogVisible)">
-        <v-card append-icon="$close" class="mx-auto" elevation="16" min-width="500" title="Send a receipt">
+    <v-dialog v-model="dialogVisible" persistent width="600">
+        <v-card append-icon="$close" class="mx-auto" elevation="16" min-width="500" title="Afegir Producte">
             <template v-slot:append>
-                <v-btn icon="$close" variant="text" @click="dialogSend = false"></v-btn>
+                <v-btn icon="$close" variant="text" @click="updateDialogSend(false)"></v-btn>
             </template>
 
             <v-divider></v-divider>
 
-            <div class="py-12 text-center">
+            <div class="py-12 text-center" v-if="dialogSendMessage != 'error'">
                 <v-icon class="mb-6" color="success" icon="mdi-check-circle-outline" size="128"></v-icon>
 
-                <div class="text-h4 font-weight-bold">This receipt was sent</div>
+                <div class="text-h4 font-weight-bold px-5">El producte s'ha afegit correctament</div>
+            </div>
+            <div class="py-12 text-center" v-else>
+                <v-icon class="mb-6" color="error" icon="mdi-alert-circle-outline" size="128"></v-icon>
+
+                <div class="text-h4 font-weight-bold px-5">El producte no s'ha pogut afegir, comproveu que heu introduït
+                    correctament els camps</div>
             </div>
 
             <v-divider></v-divider>
 
             <div class="pa-4 text-end">
                 <v-btn class="text-none" color="medium-emphasis" min-width="92" rounded variant="outlined"
-                    @click="dialogSend = false">
-                    Close
+                    @click="updateDialogSend(false)">
+                    Tancar
                 </v-btn>
             </div>
         </v-card>
