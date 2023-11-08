@@ -25,6 +25,7 @@ const { rejects } = require('assert');
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './images');
+        cb(null,'./graphics');
     },
     filename: function (req, file, cb) {
         cb(null, file.originalname);
@@ -36,6 +37,11 @@ const upload = multer({ storage: storage });
 if (!fs.existsSync('./images')) {
     fs.mkdirSync('./images');
 }
+
+if (!fs.existsSync('./graphics')) {
+    fs.mkdirSync('./graphics');
+}
+
 
 app.use(cors());
 app.use(express.json());

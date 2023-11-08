@@ -24,12 +24,13 @@ export default {
         dialog: false,
         show: false,
         screen: "main",
-        buscar: ""
+        buscar: "",
+        images: [],
     }),
     mounted() {
         socket.emit('getComandas', {});
         socket.emit('getProductes', {});
-        
+
     },
     computed: {
         productes() {
@@ -70,6 +71,9 @@ export default {
         },
         getImageName(img) {
             return "http://dam.inspedralbes.cat:3672/api/images/" + img;
+        },
+        getGraphicsName(img) {
+            return "http://dam.inspedralbes.cat:3672/api/graphics/" + img;
         }
     }
 }
@@ -86,6 +90,14 @@ export default {
             <v-btn @click="screen = 'recepcionComandes'">Recepcio comandes</v-btn>
             <v-btn @click="screen = 'listadoComandes'">Llistat comandes</v-btn>
             <v-btn @click="screen = 'resumComandes'">Resum comandes</v-btn>
+            <v-btn @click="openModal">Informes</v-btn>
+            <v-dialog v-model="modal" max-width="600">
+                <v-carousel>
+                    <v-carousel-item v-for="(image, index) in images" :key="index">
+                        <img :src="image" alt="Image" />
+                    </v-carousel-item>
+                </v-carousel>
+            </v-dialog>
             <v-img class="mx-2 mr-10" src="../assets/user.png" max-height="40" max-width="40" contain></v-img>
         </v-app-bar>
 
@@ -171,13 +183,13 @@ export default {
                     </v-container>
                 </v-form>
                 <v-row>
-                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
-                        v-if="buscar.length == 0" v-for="producto in state.productes[0]">
+                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-if="buscar.length == 0"
+                        v-for="producto in state.productes[0]">
                         <Producto :producto="producto" :callGetProductes="callGetProductes"
                             :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
-                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3"
-                        v-else v-for="producto in this.searchProduct">
+                    <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-else
+                        v-for="producto in this.searchProduct">
                         <Producto :producto="producto" :callGetProductes="callGetProductes"
                             :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
