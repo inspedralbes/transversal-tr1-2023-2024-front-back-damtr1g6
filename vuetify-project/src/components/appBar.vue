@@ -98,7 +98,6 @@ export default {
             <v-btn @click="screen = 'recepcionComandes'">Recepcio comandes</v-btn>
             <v-btn @click="screen = 'listadoComandes'">Llistat comandes</v-btn>
             <v-btn @click="screen = 'resumComandes'">Resum comandes</v-btn>
-            <v-img class="mx-2 mr-10" src="../assets/user.png" max-height="40" max-width="40" contain></v-img>
         </v-app-bar>
 
         <v-main class="box-productos" v-if="screen === 'main'">
