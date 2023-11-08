@@ -1,22 +1,31 @@
-var mysql = require('mysql2/promise');
+const express = require('express');
+var mysql = require('mysql2');
+var mysqlP = require('mysql2/promise');
 const fs = require('fs');
 const multer = require('multer');
 const date = new Date();
-
-var express = require("express");
 var bodyP = require("body-parser");
-var cors = require("cors");
-var app = express();
+
+const http = require('http');
+const path = require('path');
+const { Server } = require('socket.io');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
 const PORT = 3672;
 var cors = require('cors');
 const { rejects } = require('assert');
-const path = require('path');
-
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './images');
-        cb(null,'./graphics');
     },
     filename: function (req, file, cb) {
         cb(null, file.originalname);
@@ -28,11 +37,6 @@ const upload = multer({ storage: storage });
 if (!fs.existsSync('./images')) {
     fs.mkdirSync('./images');
 }
-
-if (!fs.existsSync('./graphics')) {
-    fs.mkdirSync('./graphics');
-}
-
 
 app.use(cors());
 app.use(express.json());
@@ -328,10 +332,6 @@ app.get('/comandaID/:id_user', (req, res) => {
 
 app.get("/api/images/:name", (req, res) => {
     res.sendFile(path.resolve("./images/" + req.params.name));
-});
-
-app.get("/api/graphics/:name", (req, res) => {
-    res.sendFile(path.resolve("./graphics/" + req.params.name));
 })
 
 app.post('/updateProducto', upload.single('image'), async (req, res) => {
@@ -340,12 +340,12 @@ app.post('/updateProducto', upload.single('image'), async (req, res) => {
     if (req.file != undefined) {
         if (req.file.filename != req.body.imagen_url) {
             const imagePath = `images/${req.body.imagen_url}`;
-            try{
+            try {
                 fs.unlinkSync(imagePath);
-            }catch(err){
+            } catch (err) {
                 console.log(err);
             }
-            
+
             producto.imagen_url = req.file.filename;
         }
     }
@@ -358,12 +358,12 @@ app.post('/updateProducto', upload.single('image'), async (req, res) => {
 
 /* --- CERRAR GESTION DE IMAGENES --- */
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT)
 })
 
 function conectDB() {
-    let con = mysql.createConnection(dbConfig)
+    let con = mysql.createConnection(dbConfig);
     con.connect(function (err) {
         if (err) {
             console.log("Error en la conexio");
@@ -672,27 +672,12 @@ function updateStateDB(id, estado) {
     disconnectDB(con);
 }
 
-function insertDBProductCarrito(id) {
-    // let con = conectDB();
-    // var sql = `INSERT INTO Comanda(estado, id_user, comentarios)values("Pending", ${id}, "No comments.")`;
-    // con.query(sql, function (err, result) {
-    //     if (err) {
-    //         console.log(err);
-    //     } else {
-    //         console.log(result);
-    //     }
-    // });
-    // disconnectDB(con);
-}
-
-
 const rutaArxiu = path.join(__dirname, 'informacio');;
 const nomArxiu = `${rutaArxiu}/dades.json`;
 
 async function getData() {
-
     try {
-        const con = await mysql.createConnection(dbConfig);
+        const con = await mysqlP.createConnection(dbConfig);
 
         const [usuariosRows] = await con.query('SELECT * FROM Usuario');
         const [productosRows] = await con.query('SELECT * FROM Productos');
@@ -735,7 +720,7 @@ getData();
 
 //Esta función lo que hace es revisar si hay cambios en la bbdd y lo actualiza en el json
 async function vigilanteBaseDatos() {
-    const con = await mysql.createConnection(dbConfig);
+    const con = await mysqlP.createConnection(dbConfig);
 
     con.connect((err) => {
         if (err) {
