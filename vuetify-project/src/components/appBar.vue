@@ -38,15 +38,15 @@ export default {
     },
     methods: {
         async addProduct() {
-            await addProducte(JSON.stringify(this.producto))
-            
+            await addProducte(this.producto)
+
         },
         async deleteP(id) {
             await deleteProducte(id);
-            
+
         },
         async callGetProductes() {
-            
+
         },
         search() {
             this.searchProduct = {};
@@ -57,7 +57,7 @@ export default {
             }
         },
         getImageName(img) {
-            return "http://dam.inspedralbes.cat:3672/api/images/" + img;
+            return "http://localhost:3672/api/images/" + img;
         },
         handleFileUpload(event) {
             const file = event.target.files[0];

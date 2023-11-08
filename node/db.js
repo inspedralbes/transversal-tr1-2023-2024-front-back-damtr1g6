@@ -59,7 +59,6 @@ cargarProductos();
 
 async function cargarProductos() {
     productos = await selectDBProductes();
-    console.log(productos);
 }
 
 async function cargarComandas() {
