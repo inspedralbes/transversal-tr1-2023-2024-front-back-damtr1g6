@@ -1,7 +1,7 @@
 import { socket } from '@/services/socket';
 
 export async function getProductes() {
-    const response = await fetch('http://dam.inspedralbes.cat:3672/productos');
+    const response = await fetch('http://localhost:3672/productos');
     const productos = await response.json();
     return productos;
 }
@@ -26,12 +26,13 @@ export async function addProducte(dadaProducte) {
     formData.append("stock", dadaProducte.stock);
     formData.append("image", dadaProducte.image);
 
-    const response = await fetch(`http://dam.inspedralbes.cat:3672/addProducto`,
+    const response = await fetch(`http://localhost:3672/addProducto`,
         {
             method: 'POST',
             mode: 'cors',
             body: formData
         },)
+    
 }
 
 export async function updateProducte(dadaProducte) {
@@ -45,16 +46,29 @@ export async function updateProducte(dadaProducte) {
     formData.append("stock", dadaProducte.stock);
     formData.append("image", dadaProducte.image);
 
-    const response = await fetch(`http://dam.inspedralbes.cat:3672/updateProducto`, {
+    const response = await fetch(`http://localhost:3672/updateProducto`, {
         method: 'POST',
         mode: 'cors',
         body: formData,
     });
 }
 
+export async function loginUser(user) {
+    console.log(JSON.stringify(user));
+    const response = await fetch(`http://localhost:3672/loginUser`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user),
+    });
+    const usuario = await response.json();
+    return usuario;
+}
+
 export async function deleteProducte(id) {
     let exist;
-    await fetch('http://dam.inspedralbes.cat:3672/deleteProducto/' + id,
+    await fetch('http://localhost:3672/deleteProducto/' + id,
         { method: 'DELETE' })
         .then(response => response.json())
         .then(data => exist = data);

@@ -95,7 +95,7 @@ io.on('connection', async (socket) => {
         io.emit('comandas', comandas);
     });
 
-    socket.on('getComandaByID', async(id) =>{
+    socket.on('getComandaByID', async (id) => {
         io.emit('comanda', comandas.filter(comanda => comanda.id == id))
     })
 
@@ -141,7 +141,7 @@ function updateStateComandas(comandas, idComanda, nuevoEstado) {
 
     if (nuevoEstado == "Processant") {
         comandas[comandaIndex].time = "green";
-        countTimeComanda(comandas, comandaIndex);
+        countTimeComanda(comandas, idComanda);
     }
 
     return comandas;
@@ -155,18 +155,40 @@ function deleteComandaComandas(comandas, idComanda) {
     return comandas;
 }
 
-async function countTimeComanda(comandas, comandaIndex) {
+async function countTimeComanda(comandas, idComanda) {
     setTimeout(() => {
+        const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
         comandas[comandaIndex].time = "yellow";
+        reordenarComandas(comandas);
         io.emit('comandas', comandas);
 
         setTimeout(() => {
-            comandas[comandaIndex].time = "red";
+            const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
+        comandas[comandaIndex].time = "red";
+            reordenarComandas(comandas);
             io.emit('comandas', comandas);
         }, 10000);
     }, 10000);
+    
 }
 
+function reordenarComandas(comandas) {
+    comandas.sort((a, b) => {
+        if (a.time === "red") {
+            return -1;
+        }
+        if (b.time === "red") {
+            return 1;
+        }
+        if (a.time === "yellow") {
+            return -1;
+        }
+        if (b.time === "yellow") {
+            return 1;
+        }
+        return 0;
+    });
+}
 /* --- CERRAR Socket.io --- */
 
 /* --- GESTION DE PRODUCTOS --- */
@@ -258,7 +280,7 @@ app.post("/loginUser", (req, res) => {
             if (data.length > 0) {
                 autorizar = true
             }
-            res.json({ "autoritzacio": autorizar, "userID": data[0].id })
+            res.json({ "autoritzacio": autorizar, "userID": data[0].id, "rol": data[0].rol })
         })
 })
 
@@ -676,74 +698,74 @@ function updateStateDB(id, estado) {
     disconnectDB(con);
 }
 
-const rutaArxiu = path.join(__dirname, 'informacio');;
-const nomArxiu = `${rutaArxiu}/dades.json`;
+// const rutaArxiu = path.join(__dirname, 'informacio');;
+// const nomArxiu = `${rutaArxiu}/dades.json`;
 
-async function getData() {
-    try {
-        const con = await mysqlP.createConnection(dbConfig);
+// async function getData() {
+//     try {
+//         const con = await mysqlP.createConnection(dbConfig);
 
-        const [usuariosRows] = await con.query('SELECT * FROM Usuario');
-        const [productosRows] = await con.query('SELECT * FROM Productos');
-        const [comandaRows] = await con.query('SELECT * FROM Comanda');
-        const [contieneRows] = await con.query('SELECT * FROM Contiene');
+//         const [usuariosRows] = await con.query('SELECT * FROM Usuario');
+//         const [productosRows] = await con.query('SELECT * FROM Productos');
+//         const [comandaRows] = await con.query('SELECT * FROM Comanda');
+//         const [contieneRows] = await con.query('SELECT * FROM Contiene');
 
-        const datos = {
-            Usuarios: usuariosRows,
-            Productos: productosRows,
-            Comanda: comandaRows,
-            Contiene: contieneRows
-        };
+//         const datos = {
+//             Usuarios: usuariosRows,
+//             Productos: productosRows,
+//             Comanda: comandaRows,
+//             Contiene: contieneRows
+//         };
 
-        if (!fs.existsSync(rutaArxiu)) {
-            fs.mkdirSync(rutaArxiu);
-        }
+//         if (!fs.existsSync(rutaArxiu)) {
+//             fs.mkdirSync(rutaArxiu);
+//         }
 
-        fs.writeFile(nomArxiu, JSON.stringify(datos), (err) => {
-            if (err) {
-                console.error('Error al guardar los datos:', err);
-            } else {
-                console.log('Datos guardados en', nomArxiu);
-            }
-        });
+//         fs.writeFile(nomArxiu, JSON.stringify(datos), (err) => {
+//             if (err) {
+//                 console.error('Error al guardar los datos:', err);
+//             } else {
+//                 console.log('Datos guardados en', nomArxiu);
+//             }
+//         });
 
-        await con.end();
+//         await con.end();
 
-    } catch (error) {
-        console.error('Error al obtener los datos:', error);
-        throw error;
-    }
-}
+//     } catch (error) {
+//         console.error('Error al obtener los datos:', error);
+//         throw error;
+//     }
+// }
 
-//Cada 1 min, llama a la función, para mantener actualizado el json
-const interval = 60 * 1000;
-setInterval(getData, interval);
+// //Cada 1 min, llama a la función, para mantener actualizado el json
+// const interval = 60 * 1000;
+// setInterval(getData, interval);
 
-getData();
+// getData();
 
 
-//Esta función lo que hace es revisar si hay cambios en la bbdd y lo actualiza en el json
-async function vigilanteBaseDatos() {
-    const con = await mysqlP.createConnection(dbConfig);
+// //Esta función lo que hace es revisar si hay cambios en la bbdd y lo actualiza en el json
+// async function vigilanteBaseDatos() {
+//     const con = await mysqlP.createConnection(dbConfig);
 
-    con.connect((err) => {
-        if (err) {
-            console.error('Error al conectar a la base de datos:', err);
-            return;
-        }
+//     con.connect((err) => {
+//         if (err) {
+//             console.error('Error al conectar a la base de datos:', err);
+//             return;
+//         }
 
-        con.query('SELECT 1', (err) => {
-            if (err) {
-                console.error('Error al hacer una consulta a la base de datos:', err);
-                return;
-            }
+//         con.query('SELECT 1', (err) => {
+//             if (err) {
+//                 console.error('Error al hacer una consulta a la base de datos:', err);
+//                 return;
+//             }
 
-            //"Salta la alarma" volvemos a cargar la base de datos
-            con.on('change', (table, changes) => {
-                getData();
-            });
-        });
-    });
-}
+//             //"Salta la alarma" volvemos a cargar la base de datos
+//             con.on('change', (table, changes) => {
+//                 getData();
+//             });
+//         });
+//     });
+// }
 
-vigilanteBaseDatos();
+// vigilanteBaseDatos();

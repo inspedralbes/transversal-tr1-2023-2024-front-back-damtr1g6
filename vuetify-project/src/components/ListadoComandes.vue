@@ -29,17 +29,19 @@ export default {
                 <v-col cols="3" v-for="comanda in comandasProcessant">
                     <v-card :style="{ backgroundColor: comanda.time }">
                         <v-card-title>
-                            ID: {{ comanda.id_comanda }}
+                            TastyByte - Comanda: {{ comanda.id_comanda }}
                         </v-card-title>
-                        <v-card-title>
+                        <v-card-text>
                             Productes: {{ comanda.productos_total }}
-                        </v-card-title>
+                        </v-card-text>
+                        <v-divider></v-divider>
                         <v-card-text>
                             <v-row>
                                 <v-col cols="10">Nom</v-col>
                                 <v-col cols="2">Preu</v-col>
                             </v-row>
                         </v-card-text>
+                        <v-divider></v-divider>
                         <v-card-text v-for="(producto, index) in comanda.productos">
                             <v-row>
                                 <v-col cols="10">{{ producto.nombre }} </v-col>
@@ -53,6 +55,7 @@ export default {
                             </v-row>
                         </v-card-text>
                         <v-card-text><b>{{ comanda.estado_comanda }}</b></v-card-text>
+                        <v-divider></v-divider>
                         <v-card-actions>
                             <v-btn @click="changeState(comanda.id_comanda, 'Preparada')">PREPARADA</v-btn>
                         </v-card-actions>

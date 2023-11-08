@@ -1,5 +1,5 @@
 <script setup>
-import { addProducte, deleteProducte } from '@/services/communicationManager';
+import { loginUser, addProducte, deleteProducte } from '@/services/communicationManager';
 import { socket, state } from '@/services/socket';
 import Producto from "../components/Producto.vue";
 import ListadoComandes from "../components/ListadoComandes.vue";
@@ -19,11 +19,16 @@ export default {
             "estado": "",
             "image": "",
         },
+        usuario: {
+            "usuario": "",
+            "passwd": "",
+        },
         comandes: [],
         dialog: false,
         showConfirmation: false,
         show: false,
-        screen: "main",
+        screen: "login",
+        appBar:false,
         buscar: "",
         images: []
     }),
@@ -59,17 +64,28 @@ export default {
             }
         },
         getImageName(img) {
-            return "http://dam.inspedralbes.cat:3672/api/images/" + img;
+            return "http://localhost:3672/api/images/" + img;
         },
         handleFileUpload(event) {
             const file = event.target.files[0];
             this.producto.image = file;
         }, getGraphics(img) {
-            return "http://dam.inspedralbes.cat:3672/api/graphics/" + img;
+            return "http://localhost:3672/api/graphics/" + img;
         },
         openModal() {
             this.modal = true;
         },
+        onSubmit() {
+            console.log(this.usuario);
+            loginUser(this.usuario)
+                .then(data => {
+                    console.log(data);
+                    if (data.rol == 'Administrador' && data.autoritzacio) {
+                        this.screen = 'main';
+                        this.appBar = true
+                    }
+                })
+        }
     }
 }
 
@@ -77,24 +93,45 @@ export default {
 
 <template>
     <v-layout>
-        <v-app-bar color="blue">
-            <v-img class="mx-2 ml-5" src="../assets/icon.png" max-height="65" max-width="65" contain
-                @click="screen = 'main'" style=":hover"></v-img>
-            <v-spacer></v-spacer>
+        <v-main v-if="screen === 'login'">
+            <v-container class="d-flex justify-center align-center" style="height: 100vh;">
+                <v-card class="mx-auto px-8 py-10 elevation-10" min-width="450">
+                    <v-img class="mx-auto d-block" src="../assets/icon.png" max-height="95" max-width="95" contain></v-img>
+                    <v-form v-model="form" @submit.prevent="onSubmit">
+                        <v-text-field v-model="usuario.usuario" required class="mb-2"
+                            clearable label="Usuari"></v-text-field>
 
-            <v-btn @click="screen = 'recepcionComandes'">Recepcio comandes</v-btn>
-            <v-btn @click="screen = 'listadoComandes'">Llistat comandes</v-btn>
-            <v-btn @click="screen = 'resumComandes'">Resum comandes</v-btn>
-            <v-btn @click="openModal">Informes</v-btn>
-            <v-dialog v-model="modal" max-width="600">
-                <v-carousel>
-                    <v-carousel-item v-for="(image, index) in images" :key="index">
-                        <img :src="image" alt="Imagen" @error="handleImageError">
-                    </v-carousel-item>
-                </v-carousel>
-            </v-dialog>
-            <v-img class="mx-2 mr-10" src="../assets/user.png" max-height="40" max-width="40" contain></v-img>
-        </v-app-bar>
+                        <v-text-field type="password" v-model="usuario.passwd" required
+                            clearable label="Contrassenya"></v-text-field>
+
+                        <br>
+
+                        <v-btn block color="success" size="large" type="submit" variant="elevated">
+                            Sign In
+                        </v-btn>
+                    </v-form>
+                </v-card>
+            </v-container>
+        </v-main>
+
+        <v-app-bar color="blue" v-if="appBar">
+                <v-img class="mx-2 ml-5" src="../assets/icon.png" max-height="65" max-width="65" contain
+                    @click="screen = 'main'" style=":hover"></v-img>
+                <v-spacer></v-spacer>
+
+                <v-btn @click="screen = 'recepcionComandes'">Recepcio comandes</v-btn>
+                <v-btn @click="screen = 'listadoComandes'">Llistat comandes</v-btn>
+                <v-btn @click="screen = 'resumComandes'">Resum comandes</v-btn>
+                <v-btn @click="openModal">Informes</v-btn>
+                <v-dialog v-model="modal" max-width="600">
+                    <v-carousel>
+                        <v-carousel-item v-for="(image, index) in images" :key="index">
+                            <img :src="image" alt="Imagen" @error="handleImageError">
+                        </v-carousel-item>
+                    </v-carousel>
+                </v-dialog>
+                <v-img class="mx-2 mr-10" src="../assets/user.png" max-height="40" max-width="40" contain></v-img>
+            </v-app-bar>
 
         <v-main class="box-productos" v-if="screen === 'main'">
             <v-container>
@@ -191,6 +228,7 @@ export default {
                 </v-row>
             </v-container>
         </v-main>
+
         <RecepcioComandes v-if="screen === 'recepcionComandes'" />
         <ListadoComandes v-if="screen === 'listadoComandes'" />
         <ResumComandes v-if="screen === 'resumComandes'" />
