@@ -56,7 +56,7 @@ plt.bar(prodState, prodsPercentages, color=['blue', 'red'])
 plt.xlabel('Estat del producte')
 plt.ylabel('Quanitat de productes (%)')
 plt.title('ESTATS DELS PRODUCTES')
-plt.savefig('./informes/estatProd.png')
+plt.savefig('./graphics/estatProd.png')
 
 
 #GRAFICA ESTADO DE COMANDAS (preparando, procesando y recibida)
@@ -81,7 +81,7 @@ plt.xlabel('Estat de la comanda')
 plt.ylabel('Quantitat de comandes')
 plt.title('ESTAT DE LES COMANDES')
 plt.ylim(0, totalOrders)
-plt.savefig('./informes/estatComandes.png')
+plt.savefig('./graphics/estatComandes.png')
 
 
 #GRAFICA DE STOCK DE LOS PRODUCTOS
@@ -102,7 +102,7 @@ plt.ylabel('Nom del porducte')
 plt.title('STOCK DELS PRODUCTES')
 plt.grid(axis='x', linestyle='--', alpha=0.6)  
 plt.tight_layout()  
-plt.savefig('./informes/stock.png')
+plt.savefig('./graphics/stock.png')
 
 
 

@@ -1,40 +1,47 @@
 <script setup>
-import { deleteProducte, updateProducte } from '@/communicationManager';
+import { deleteProducte, updateProducte } from '@/services/communicationManager';
 </script>
+
 
 <script>
 
 export default {
-    props: ["producto", "callGetProductes"],
+    props: ["producto", "callGetProductes", "imageName"],
     data: () => ({
         modal: false,
         dialog: false,
+        image: null,
+        modalExist: false,
     }),
     methods: {
-        changeState(id) {
-
-        },
         async deleteP(id) {
-            await deleteProducte(id);
+            let deleted = await deleteProducte(id);
+
+            if (!deleted) {
+                this.modalExist = true;
+            }
+
             this.callGetProductes();
         },
         async updateP(producte) {
-            await updateProducte(JSON.stringify(producte))
+            await updateProducte(producte);
             this.callGetProductes();
-        }
+        },
+        handleFileUpload(event) {
+            const file = event.target.files[0];
+            this.producto.image = file;
+        },
+        closeModal() {
+            this.modalExist = false;
+        },
     },
-
-    mounted() {
-
-    }
 }
 </script>
 
 <template>
     
     <v-card style="height: 510px">
-        <v-img src="https://img.freepik.com/fotos-premium/3d-burger-sandwich-for-social-media-post-7_351245-1478.jpg"
-            height="380px" alter="no encontrado" cover></v-img>
+        <v-img :src="imageName" height="380px" alter="no encontrado" cover></v-img>
 
         <v-card-title>
             {{ producto.nombre }}
@@ -45,12 +52,12 @@ export default {
         </v-card-subtitle>
 
         <v-card-actions icon>
-            <v-card-text>{{ producto.precio }}</v-card-text>
+            <v-card-text>{{ producto.precio }} €</v-card-text>
             <v-spacer></v-spacer>
-            <v-btn color="orange-lighten-2" variant="text" @click="deleteP(producto.id)">DELETE</v-btn>
+            <v-btn color="blue" variant="text" icon="mdi-delete-outline" @click="deleteP(producto.id)"></v-btn>
             <v-dialog v-model="dialog" persistent width="1024">
                 <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" class="ma-2" color="purple" icon="mdi-wrench">
+                    <v-btn v-bind="props" class="ma-2" color="blue" icon="mdi-wrench">
 
                     </v-btn>
                 </template>
@@ -74,7 +81,8 @@ export default {
                                         hint="Ensalada fresca de frutas tropicales" required></v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="4">
-                                    <v-text-field label="Imagen*" v-model="producto.imagen_url" required></v-text-field>
+                                    <v-file-input accept="image/*" label="Image" @change="handleFileUpload"
+                                        require></v-file-input>
                                 </v-col>
                                 <v-col cols="12" sm="4">
                                     <v-text-field label="Stock*" v-model="producto.stock" type="number"
@@ -99,8 +107,18 @@ export default {
                     </v-card-actions>
                 </v-card>
             </v-dialog>
+            <v-dialog v-model="modalExist" max-width="300">
+                <v-card>
+                    <v-card-title class="headline"><v-icon color="warning" icon="mdi-alert"></v-icon></v-card-title>
+                    <v-card-text>
+                        El producto está siendo utilizado en una comanda existente.
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-btn @click="closeModal" color="primary">Okey</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
         </v-card-actions>
-
     </v-card>
 </template>
 
