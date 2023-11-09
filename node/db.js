@@ -97,37 +97,37 @@ io.on('connection', async (socket) => {
 
     socket.on('getComandaByID', async (id) => {
         selectComandaByID(id)
-        .then(data =>{
-            var result = [];
-            data.forEach(element => {
-                if(element.productos != null){
-                element.productos = desconcatenador(element)
+            .then(data => {
+                var result = [];
+                data.forEach(element => {
+                    if (element.productos != null) {
+                        element.productos = desconcatenador(element)
+                    }
+                });
+                data = data.filter(comanda => comanda.estado_comanda == 'Recollida')
+                for (let i = data.length - 1; i > data.length - 11; i--) {
+                    if (data[i] != undefined) {
+                        result.push(data[i]);
+                    }
                 }
-            });
-            data = data.filter(comanda => comanda.estado_comanda == 'Recollida')
-            for(let i = data.length-1 ; i > data.length-11; i--){
-                if(data[i] != undefined){
-                    result.push(data[i]);
-                }
-            }
-            console.log(result);
-            io.emit('comanda', result);
-        })
-        
+                console.log(result);
+                io.emit('comanda', result);
+            })
+
     })
 
     socket.on('getComandaByIDInProcess', async (id) => {
         selectComandaByID(id)
-        .then(data =>{
-            data.forEach(element => {
-                if(element.productos != null){
-                element.productos = desconcatenador(element)
-                }
-            });
-            data = data.filter(comanda => comanda.estado_comanda == 'Processant')
-            io.emit('comanda', data)
-        })
-        
+            .then(data => {
+                data.forEach(element => {
+                    if (element.productos != null) {
+                        element.productos = desconcatenador(element)
+                    }
+                });
+                data = data.filter(comanda => comanda.estado_comanda == 'Processant')
+                io.emit('comanda', data)
+            })
+
     })
 
     socket.on('getProductes', async (id) => {
@@ -195,12 +195,12 @@ async function countTimeComanda(comandas, idComanda) {
 
         setTimeout(() => {
             const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
-        comandas[comandaIndex].time = "red";
+            comandas[comandaIndex].time = "red";
             reordenarComandas(comandas);
             io.emit('comandas', comandas);
         }, 10000);
     }, 10000);
-    
+
 }
 
 function reordenarComandas(comandas) {
@@ -316,13 +316,18 @@ app.post("/usuario", (req, res) => {
 
 app.post("/loginUser", (req, res) => {
     const datos = req.body;
+    console.log(datos);
     selectDBUserLogin(datos.usuario, datos.passwd)
         .then((data) => {
             let autorizar = false
             if (data.length > 0) {
-                autorizar = true
+                if (data.length > 0) {
+                    autorizar = true
+                }
+                res.json({ "autoritzacio": autorizar, "userID": data[0].id, "rol": data[0].rol })
+            } else{
+                res.json({ "autoritzacio": autorizar, "userID": 0, "rol": "" })
             }
-            res.json({ "autoritzacio": autorizar, "userID": data[0].id, "rol": data[0].rol })
         })
 })
 
