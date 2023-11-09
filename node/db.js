@@ -101,7 +101,6 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('getComandaByID', async (id) => {
-    socket.on('getComandaByID', async (id) => {
         selectComandaByID(id)
             .then(data => {
                 var result = [];
