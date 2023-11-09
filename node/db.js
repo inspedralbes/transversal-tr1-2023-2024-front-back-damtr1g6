@@ -102,39 +102,38 @@ io.on('connection', async (socket) => {
 
     socket.on('getComandaByID', async (id) => {
         selectComandaByID(id)
-        .then(data =>{
-            var result = [];
-            data.forEach(element => {
-                if(element.productos != null){
-                element.productos = desconcatenador(element)
+            .then(data => {
+                var result = [];
+                data.forEach(element => {
+                    if (element.productos != null) {
+                        element.productos = desconcatenador(element)
+                    }
+                });
+                data = data.filter(comanda => comanda.estado_comanda == 'Recollida')
+                for (let i = data.length - 1; i > data.length - 11; i--) {
+                    if (data[i] != undefined) {
+                        result.push(data[i]);
+                    }
                 }
-            });
-            data = data.filter(comanda => comanda.estado_comanda == 'Recollida')
-            for(let i = data.length-1 ; i > data.length-11; i--){
-                if(data[i] != undefined){
-                    result.push(data[i]);
-                }
-            }
-            console.log(result);
-            io.emit('comanda', result);
-        })
-        
+                console.log(result);
+                io.emit('comanda', result);
+            })
+
     })
 
     socket.on('getComandaByIDInProcess', async (id) => {
         selectComandaByID(id)
-        .then(data =>{
-            data.forEach(element => {
-                if(element.productos != null){
-                element.productos = desconcatenador(element)
-                }
-            });
-            data = data.filter(comanda => comanda.estado_comanda == 'Processant')
-            io.emit('comanda', data)
-        })
-        
-    })
+            .then(data => {
+                data.forEach(element => {
+                    if (element.productos != null) {
+                        element.productos = desconcatenador(element)
+                    }
+                });
+                data = data.filter(comanda => comanda.estado_comanda == 'Processant')
+                io.emit('comanda', data)
+            })
 
+    })
     socket.on('getProductes', async (id) => {
         io.emit('productes', productos);
     });
@@ -200,12 +199,12 @@ async function countTimeComanda(comandas, idComanda) {
 
         setTimeout(() => {
             const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
-        comandas[comandaIndex].time = "red";
+            comandas[comandaIndex].time = "red";
             reordenarComandas(comandas);
             io.emit('comandas', comandas);
         }, 10000);
     }, 10000);
-    
+
 }
 
 function reordenarComandas(comandas) {
@@ -301,12 +300,6 @@ app.delete("/deleteProducto/:id", async (req, res) => {
 
 /* --- GESTION DE USUARIOS --- */
 
-app.post("/usuario", async (req, res) => {
-    let email = req.body.email;
-    let myUser = await selectDBMiUsuario(email);
-    res.send({ "id": myUser[0].id, "username": myUser[0].usuario, "email": myUser[0].email });
-})
-
 app.post("/usuario", (req, res) => {
     const user = req.body;
     const email = user.email
@@ -326,9 +319,13 @@ app.post("/loginUser", (req, res) => {
         .then((data) => {
             let autorizar = false
             if (data.length > 0) {
-                autorizar = true
+                if (data.length > 0) {
+                    autorizar = true
+                }
+                res.json({ "autoritzacio": autorizar, "userID": data[0].id, "rol": data[0].rol })
+            } else {
+                res.json({ "autoritzacio": autorizar, "userID": 0, "rol": "" })
             }
-            res.json({ "autoritzacio": autorizar, "userID": data[0].id, "rol": data[0].rol })
         })
 })
 
@@ -349,7 +346,6 @@ app.get('/usuarioID/:id', (req, res) => {
             res.status(500).json({ error: 'Error en la consulta a la base de datos' });
         });
 });
-
 
 /* --- CERRAR GESTION DE USUARIOS --- */
 
@@ -505,7 +501,7 @@ function selectDBUserID(id) {
 function selectComandaByID(id_user) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT CD.id_comanda, CD.estado_comanda GROUP_CONCAT("(", CO.cantidad, ")", P.nombre, "-", P.precio) AS productos
+        var sql = `SELECT CD.id_comanda, GROUP_CONCAT("(", CO.cantidad, ")", P.nombre, "-", P.precio) AS productos
         FROM (
             SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
             FROM Comanda
@@ -729,6 +725,21 @@ function insertDBComanda(id, fecha) {
     });
 }
 
+function selectDBUserID(id) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `SELECT * FROM Usuario WHERE id="${id}"`
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(result);
+            }
+        })
+        disconnectDB(con);
+    })
+}
+
 function deleteComandaDB(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
@@ -856,25 +867,32 @@ async function vigilanteBaseDatos() {
 function generateGraph() {
     vigilanteBaseDatos();
     return new Promise((resolve, reject) => {
-        var { spawn } = require("child_process");
-        var proceso = spawn("Python", ["./stats.py"]);
+        try {
+            var { spawn } = require("child_process");
+            var proceso = spawn("Python", ["./stats.py"]);
 
-        proceso.on("close", (code) => {
-            if (code === 0) {
-                resolve();
-            } else {
-                console.error(
-                    `${code}`
-                );
-                reject(
-                    `${code}`
-                );
-            }
-        });
+            proceso.on("close", (code) => {
+                if (code === 0) {
+                    resolve();
+                } else {
+                    console.error(
+                        `${code}`
+                    );
+                    reject(
+                        `${code}`
+                    );
+                }
+            });
+        } catch (err) {
+            console.error(err);
+            reject(err);
+        }
+        resolve();
     });
 }
 
 app.use('/graphics', express.static(path.join(__dirname, 'graphics')));
+
 app.get('/graphics', async (req, res) => {
     
     try {

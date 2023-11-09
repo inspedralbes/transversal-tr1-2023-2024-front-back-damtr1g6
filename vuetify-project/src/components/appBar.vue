@@ -117,6 +117,8 @@ export default {
                     if (data.rol == 'Administrador' && data.autoritzacio) {
                         this.screen = 'main';
                         this.appBar = true
+                    } else{
+                        console.log("Equivocado");
                     }
                 })
         },
