@@ -96,7 +96,24 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('getComandaByID', async (id) => {
-        io.emit('comanda', comandas.filter(comanda => comanda.id == id))
+        selectComandaByID(id)
+        .then(data =>{
+            var result = [];
+            data.forEach(element => {
+                if(element.productos != null){
+                element.productos = desconcatenador(element)
+                }
+            });
+            let j = 0;
+            for(let i = data.length-1 ; i > data.length-11; i--){
+                console.log(j);
+                result.push(data[i]);
+                j++;
+            }
+            console.log(result);
+            io.emit('comanda', result)
+        })
+        
     })
 
     socket.on('getProductes', async (id) => {
