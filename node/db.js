@@ -115,7 +115,6 @@ io.on('connection', async (socket) => {
                         result.push(data[i]);
                     }
                 }
-                console.log(result);
                 io.emit('comanda', result);
             })
 
@@ -124,15 +123,18 @@ io.on('connection', async (socket) => {
     socket.on('getComandaByIDInProcess', async (id) => {
         selectComandaByID(id)
             .then(data => {
-                data.forEach(element => {
-                    if (element.productos != null) {
-                        element.productos = desconcatenador(element)
-                    }
-                });
-                data = data.filter(comanda => comanda.estado_comanda == 'Processant')
-                io.emit('comanda', data)
-            })
-
+                if (data.length > 0) {  // Verifica que data tenga al menos un elemento
+                    data.forEach(element => {
+                        if (element.productos != null) {
+                            element.productos = desconcatenador(element)
+                        }
+                    });
+                    data = data.filter(comanda => comanda.estado_comanda == 'Processant' || comanda.estado_comanda == 'Preparada')
+                    io.emit('comanda', data)
+                } else {
+                    console.log('No se encontraron comandas para el ID especificado');
+                }
+            });
     })
     socket.on('getProductes', async (id) => {
         io.emit('productes', productos);
@@ -147,7 +149,7 @@ io.on('connection', async (socket) => {
     socket.on('changeState', async (comanda) => {
         updateStateDB(comanda.id, comanda.state);
         updateStateComandas(comandas, comanda.id, comanda.state);
-
+        getComandaByIDInProcess(comanda.id);
         io.emit('comandas', comandas);
     });
 
@@ -162,6 +164,25 @@ io.on('connection', async (socket) => {
 
     });
 });
+
+// Agrega esta función para reutilizarla en ambos eventos
+async function getComandaByIDInProcess(id) {
+    var id_user = await selectDBMiUsuario(id);
+    selectComandaByID(id_user[0].id_user)
+        .then(data => {
+            if (data.length > 0) {  // Verifica que data tenga al menos un elemento
+                data.forEach(element => {
+                    if (element.productos != null) {
+                        element.productos = desconcatenador(element)
+                    }
+                });
+                data = data.filter(comanda => comanda.estado_comanda == 'Processant' || comanda.estado_comanda == 'Preparada')
+                io.emit('comanda', data)
+            } else {
+                console.log('No se encontraron comandas para el ID especificado');
+            }
+        });
+}
 
 function updateStateProducte(productes, producte) {
     var indexProducte = productes.findIndex(producto => producto.id === producte.id)
@@ -314,7 +335,6 @@ app.post("/usuario", (req, res) => {
 
 app.post("/loginUser", (req, res) => {
     const datos = req.body;
-    console.log(datos);
     selectDBUserLogin(datos.usuario, datos.passwd)
         .then((data) => {
             let autorizar = false
@@ -327,10 +347,6 @@ app.post("/loginUser", (req, res) => {
                 res.json({ "autoritzacio": autorizar, "userID": 0, "rol": "" })
             }
         })
-})
-
-app.post("/miUsuario", (req, res) => {
-    res.json(user)
 })
 
 app.get('/usuarioID/:id', (req, res) => {
@@ -388,29 +404,6 @@ app.post("/insertProducte", async (req, res) => {
 
     procesarProductos();
 })
-
-app.get('/comandaID/:id_user', (req, res) => {
-    console.log("aaaaaaaaa");
-    const comandaID = req.params.id_user;
-    console.log(req.params.id_user);
-    selectComandaByID(comandaID)
-        .then(result => {
-            console.log(result);
-            if (result.length > 0) {
-                // console.log(result);
-                // result.forEach(comanda => {
-                //     var productos = desconcatenador(comanda.productos);
-                //     comanda.producto = productos;
-                //     console.log(comanda);
-                // });
-            } else {
-            }
-        })
-        .catch(error => {
-            res.status(500).json({ error: 'Error en la consulta a la base de datos' });
-        });
-    res.json(productos)
-});
 
 /* --- CERRAR GESTION DE COMANDAS --- */
 
@@ -501,7 +494,7 @@ function selectDBUserID(id) {
 function selectComandaByID(id_user) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT CD.id_comanda, GROUP_CONCAT("(", CO.cantidad, ")", P.nombre, "-", P.precio) AS productos
+        var sql = `SELECT CD.id_comanda, CD.estado_comanda, GROUP_CONCAT("(", CO.cantidad, ")", P.nombre, "-", P.precio) AS productos
         FROM (
             SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
             FROM Comanda
@@ -590,10 +583,12 @@ function deleteDBProductos(id) {
     });
 }
 
-function selectDBMiUsuario(email) {
+function selectDBMiUsuario(id) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT * FROM Usuario WHERE email = "${email}"`;
+        var sql = `SELECT C.id_user
+        FROM Comanda C
+        WHERE C.id = ${id};`;
 
         con.query(sql, function (err, result) {
             if (err) {
