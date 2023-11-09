@@ -891,7 +891,7 @@ app.use('/graphics', express.static(path.join(__dirname, 'graphics')));
 app.get('/graphics', async (req, res) => {
     
     try {
-        await getData();
+        await generateGraph();
     const images = [
         'http://localhost:3672/graphics/estatComandes.jpg', 
         'http://localhost:3672/graphics/estatProd.jpg', 
