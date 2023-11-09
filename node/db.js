@@ -24,6 +24,7 @@ const PORT = 3672;
 var cors = require('cors');
 app.use(cors());
 const { rejects } = require('assert');
+const e = require('express');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -100,6 +101,22 @@ io.on('connection', async (socket) => {
         io.emit('comandas', comandas);
     });
 
+    socket.on('getComandasByIdUser', async(id) =>{
+        selectComandaByID(id)
+        .then((data) =>{
+            data.forEach(comanda => {
+                if(comanda.productos != null){
+                comanda.productos = desconcatenador(comanda);
+                }
+            });
+            var result = [];
+            for(let i = data.length-1; i > data.length-11; i-- ){
+                result.push(data[i]);
+            }
+            io.emit('comandasByUserId', result);
+        })
+    });
+
     socket.on('getProductes', async (id) => {
         io.emit('productes', productos);
     });
@@ -128,6 +145,7 @@ io.on('connection', async (socket) => {
 
     });
 });
+
 
 function updateStateProducte(productes, producte) {
     var indexProducte = productes.findIndex(producto => producto.id === producte.id)
@@ -677,45 +695,6 @@ function updateStateDB(id, estado) {
         }
     });
     disconnectDB(con);
-}
-
-const rutaArxiu = path.join(__dirname, 'informacio');;
-const nomArxiu = `${rutaArxiu}/dades.json`;
-
-async function getData() {
-    try {
-        const con = await mysqlP.createConnection(dbConfig);
-
-        const [usuariosRows] = await con.query('SELECT * FROM Usuario');
-        const [productosRows] = await con.query('SELECT * FROM Productos');
-        const [comandaRows] = await con.query('SELECT * FROM Comanda');
-        const [contieneRows] = await con.query('SELECT * FROM Contiene');
-
-        const datos = {
-            Usuarios: usuariosRows,
-            Productos: productosRows,
-            Comanda: comandaRows,
-            Contiene: contieneRows
-        };
-
-        if (!fs.existsSync(rutaArxiu)) {
-            fs.mkdirSync(rutaArxiu);
-        }
-
-        fs.writeFile(nomArxiu, JSON.stringify(datos), (err) => {
-            if (err) {
-                console.error('Error al guardar los datos:', err);
-            } else {
-                console.log('Datos guardados en', nomArxiu);
-            }
-        });
-
-        await con.end();
-
-    } catch (error) {
-        console.error('Error al obtener los datos:', error);
-        throw error;
-    }
 }
 
 //Cada 1 min, llama a la función, para mantener actualizado el json
