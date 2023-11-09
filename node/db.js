@@ -321,6 +321,7 @@ app.post("/usuario", (req, res) => {
 
 app.post("/loginUser", (req, res) => {
     const datos = req.body;
+    console.log(datos);
     selectDBUserLogin(datos.usuario, datos.passwd)
         .then((data) => {
             let autorizar = false
