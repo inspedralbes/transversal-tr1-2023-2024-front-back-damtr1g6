@@ -3,8 +3,9 @@ import { loginUser, addProducte, deleteProducte } from '@/services/communication
 import { socket, state } from '@/services/socket';
 import Producto from "../components/Producto.vue";
 import ListadoComandes from "../components/ListadoComandes.vue";
-import ResumComandes from "../components/ResumComandes.vue"
-import RecepcioComandes from "../components/RecepcioComandes.vue"
+import ResumComandes from "../components/ResumComandes.vue";
+import RecepcioComandes from "../components/RecepcioComandes.vue";
+import DialogoEnviar from "../components/DialogoEnviar.vue";
 </script>
 
 <script>
@@ -30,7 +31,9 @@ export default {
         screen: "login",
         appBar:false,
         buscar: "",
-        images: []
+        images: [],
+        dialogSend: false,
+        dialogSendMessage: "",
     }),
     mounted() {
         socket.emit('getComandas', {});
@@ -39,21 +42,33 @@ export default {
     },
     computed: {
         productes() {
-            this.searchProduct = state.productes[0]
+            this.searchProduct = state.productes[0];
         }
     },
     methods: {
         async addProduct() {
-            await addProducte(this.producto);
+            this.dialogSend = true;
+            this.dialogSendMessage = "loading";
+            let response = await addProducte(this.producto);
+
+            this.producto = {
+                "nombre": "",
+                "descripcion": "",
+                "precio": 0,
+                "stock": 0,
+                "estado": "",
+                "image": "",
+            };
+
             this.showConfirmation = true;
-            console.log(this.showConfirmation);
+            if (response.message == undefined) {
+                this.dialogSendMessage = "";
+            } else {
+                this.dialogSendMessage = "error";
+            }
         },
         async deleteP(id) {
             await deleteProducte(id);
-
-        },
-        async callGetProductes() {
-
         },
         search() {
             this.searchProduct = {};
@@ -85,6 +100,9 @@ export default {
                         this.appBar = true
                     }
                 })
+        },
+        updateDialogSend(newValue) {
+            this.dialogSend = newValue;
         }
     }
 }
@@ -130,11 +148,12 @@ export default {
                         </v-carousel-item>
                     </v-carousel>
                 </v-dialog>
-                <v-img class="mx-2 mr-10" src="../assets/user.png" max-height="40" max-width="40" contain></v-img>
-            </v-app-bar>
+                </v-app-bar>
 
         <v-main class="box-productos" v-if="screen === 'main'">
             <v-container>
+                <DialogoEnviar :dialogSend="dialogSend" :dialogSendMessage="dialogSendMessage"
+                    :updateDialogSend="updateDialogSend" />
                 <v-form class="box-write">
                     <v-container>
                         <v-row>
@@ -217,13 +236,11 @@ export default {
                 <v-row>
                     <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-if="buscar.length == 0"
                         v-for="producto in state.productes[0]">
-                        <Producto :producto="producto" :callGetProductes="callGetProductes"
-                            :imageName="getImageName(producto.imagen_url)" />
+                        <Producto :producto="producto" :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
                     <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-else
                         v-for="producto in this.searchProduct">
-                        <Producto :producto="producto" :callGetProductes="callGetProductes"
-                            :imageName="getImageName(producto.imagen_url)" />
+                        <Producto :producto="producto" :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
                 </v-row>
             </v-container>

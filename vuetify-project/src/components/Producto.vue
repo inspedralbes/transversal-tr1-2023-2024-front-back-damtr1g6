@@ -6,7 +6,7 @@ import { deleteProducte, updateProducte } from '@/services/communicationManager'
 <script>
 
 export default {
-    props: ["producto", "callGetProductes", "imageName"],
+    props: ["producto", "imageName"],
     data: () => ({
         modal: false,
         dialog: false,

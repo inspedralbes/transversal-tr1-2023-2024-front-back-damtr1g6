@@ -235,12 +235,23 @@ app.get("/productos", (req, res) => {
 });
 
 app.post("/addProducto", upload.single('image'), async (req, res) => {
-    let producto = req.body;
+    try {
+        let producto = req.body;
+        let nameImage;
 
-    await insertDBProductos(producto.nombre, producto.descripcion, producto.precio, req.file.filename, producto.stock, producto.estado);
-    await cargarProductos();
-    io.emit('productes', productos);
-    res.json(producto);
+        if (req.file == undefined) {
+            nameImage = "a.jpg";
+        } else {
+            nameImage = req.file.filename;
+        }
+
+        await insertDBProductos(producto.nombre, producto.descripcion, producto.precio, nameImage, producto.stock, producto.estado);
+        await cargarProductos();
+        io.emit('productes', productos);
+        res.json(producto);
+    } catch (error) {
+        res.json({ message: "error" });
+    }
 });
 
 app.post('/updateProducto', upload.single('image'), async (req, res) => {

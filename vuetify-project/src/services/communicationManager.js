@@ -17,6 +17,7 @@ export function getComandes() {
 }
 
 export async function addProducte(dadaProducte) {
+    let response;
     var formData = new FormData();
     formData.append("id", dadaProducte.id);
     formData.append("nombre", dadaProducte.nombre);
@@ -26,13 +27,15 @@ export async function addProducte(dadaProducte) {
     formData.append("stock", dadaProducte.stock);
     formData.append("image", dadaProducte.image);
 
-    const response = await fetch(`http://localhost:3672/addProducto`,
+    await fetch(`http://localhost:3672/addProducto`,
         {
             method: 'POST',
             mode: 'cors',
             body: formData
-        },)
-    
+        },).then(response => response.json())
+        .then(data => response = data);
+
+    return response;
 }
 
 export async function updateProducte(dadaProducte) {
