@@ -100,6 +100,41 @@ io.on('connection', async (socket) => {
         io.emit('comandas', comandas);
     });
 
+    socket.on('getComandaByID', async (id) => {
+        selectComandaByID(id)
+        .then(data =>{
+            var result = [];
+            data.forEach(element => {
+                if(element.productos != null){
+                element.productos = desconcatenador(element)
+                }
+            });
+            data = data.filter(comanda => comanda.estado_comanda == 'Recollida')
+            for(let i = data.length-1 ; i > data.length-11; i--){
+                if(data[i] != undefined){
+                    result.push(data[i]);
+                }
+            }
+            console.log(result);
+            io.emit('comanda', result);
+        })
+        
+    })
+
+    socket.on('getComandaByIDInProcess', async (id) => {
+        selectComandaByID(id)
+        .then(data =>{
+            data.forEach(element => {
+                if(element.productos != null){
+                element.productos = desconcatenador(element)
+                }
+            });
+            data = data.filter(comanda => comanda.estado_comanda == 'Processant')
+            io.emit('comanda', data)
+        })
+        
+    })
+
     socket.on('getProductes', async (id) => {
         io.emit('productes', productos);
     });
@@ -142,7 +177,7 @@ function updateStateComandas(comandas, idComanda, nuevoEstado) {
 
     if (nuevoEstado == "Processant") {
         comandas[comandaIndex].time = "green";
-        countTimeComanda(comandas, comandaIndex);
+        countTimeComanda(comandas, idComanda);
     }
 
     return comandas;
@@ -156,18 +191,40 @@ function deleteComandaComandas(comandas, idComanda) {
     return comandas;
 }
 
-async function countTimeComanda(comandas, comandaIndex) {
+async function countTimeComanda(comandas, idComanda) {
     setTimeout(() => {
+        const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
         comandas[comandaIndex].time = "yellow";
+        reordenarComandas(comandas);
         io.emit('comandas', comandas);
 
         setTimeout(() => {
-            comandas[comandaIndex].time = "red";
+            const comandaIndex = comandas.findIndex(comanda => comanda.id_comanda === idComanda);
+        comandas[comandaIndex].time = "red";
+            reordenarComandas(comandas);
             io.emit('comandas', comandas);
         }, 10000);
     }, 10000);
+    
 }
 
+function reordenarComandas(comandas) {
+    comandas.sort((a, b) => {
+        if (a.time === "red") {
+            return -1;
+        }
+        if (b.time === "red") {
+            return 1;
+        }
+        if (a.time === "yellow") {
+            return -1;
+        }
+        if (b.time === "yellow") {
+            return 1;
+        }
+        return 0;
+    });
+}
 /* --- CERRAR Socket.io --- */
 
 /* --- GESTION DE PRODUCTOS --- */
@@ -183,12 +240,23 @@ app.get("/productos", (req, res) => {
 });
 
 app.post("/addProducto", upload.single('image'), async (req, res) => {
-    let producto = req.body;
+    try {
+        let producto = req.body;
+        let nameImage;
 
-    await insertDBProductos(producto.nombre, producto.descripcion, producto.precio, req.file.filename, producto.stock, producto.estado);
-    await cargarProductos();
-    io.emit('productes', productos);
-    res.json(producto);
+        if (req.file == undefined) {
+            nameImage = "a.jpg";
+        } else {
+            nameImage = req.file.filename;
+        }
+
+        await insertDBProductos(producto.nombre, producto.descripcion, producto.precio, nameImage, producto.stock, producto.estado);
+        await cargarProductos();
+        io.emit('productes', productos);
+        res.json(producto);
+    } catch (error) {
+        res.json({ message: "error" });
+    }
 });
 
 app.post('/updateProducto', upload.single('image'), async (req, res) => {
@@ -259,7 +327,7 @@ app.post("/loginUser", (req, res) => {
             if (data.length > 0) {
                 autorizar = true
             }
-            res.json({ "autoritzacio": autorizar, "userID": data[0].id })
+            res.json({ "autoritzacio": autorizar, "userID": data[0].id, "rol": data[0].rol })
         })
 })
 
@@ -267,13 +335,29 @@ app.post("/miUsuario", (req, res) => {
     res.json(user)
 })
 
+app.get('/usuarioID/:id', (req, res) => {
+    const userId = req.params.id;
+    selectDBUserID(userId)
+        .then(result => {
+            if (result.length > 0) {
+                res.json(result);
+            } else {
+            }
+        })
+        .catch(error => {
+            res.status(500).json({ error: 'Error en la consulta a la base de datos' });
+        });
+});
+
+
 /* --- CERRAR GESTION DE USUARIOS --- */
 
 /* --- GESTION DE COMANDAS --- */
 
 app.post("/createComanda", async (req, res) => {
     let id_user = req.body.id_user;
-    res.send({ id_comanda: await insertDBComanda(id_user) });
+    let fecha = req.body.fecha;
+    res.send({ id_comanda: await insertDBComanda(id_user, fecha) });
 })
 
 app.post("/insertProducte", async (req, res) => {
@@ -402,10 +486,25 @@ function selectDBProducteID(id) {
     });
 }
 
+function selectDBUserID(id) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `SELECT * FROM Usuario WHERE id="${id}"`
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(result);
+            }
+        })
+        disconnectDB(con);
+    })
+}
+
 function selectComandaByID(id_user) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `SELECT CD.id_comanda, GROUP_CONCAT("(", CO.cantidad, ")", P.nombre, "-", P.precio) AS productos
+        var sql = `SELECT CD.id_comanda, CD.estado_comanda GROUP_CONCAT("(", CO.cantidad, ")", P.nombre, "-", P.precio) AS productos
         FROM (
             SELECT DISTINCT id AS id_comanda, estado AS estado_comanda
             FROM Comanda
@@ -596,10 +695,10 @@ function desconcatenador(productos) {
     return res;
 }
 
-function insertDBComanda(id) {
+function insertDBComanda(id, fecha) {
     return new Promise((resolve, reject) => {
         let con = conectDB();
-        var sql = `INSERT INTO Comanda(estado, id_user, comentarios) VALUES("Rebuda", ${id}, "No comments.")`;
+        var sql = `INSERT INTO Comanda(estado, id_user, comentarios, fecha) VALUES("Rebuda", ${id}, "No comments.", "${fecha}")`;
 
         con.query(sql, function (err, result) {
             if (err) {
