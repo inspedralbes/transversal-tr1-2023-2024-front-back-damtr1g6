@@ -29,7 +29,7 @@ export default {
         showConfirmation: false,
         show: false,
         screen: "login",
-        appBar:false,
+        appBar: false,
         buscar: "",
         images: [],
         dialogSend: false,
@@ -79,13 +79,13 @@ export default {
             }
         },
         getImageName(img) {
-            return "http://localhost:3672/api/images/" + img;
+            return "http://dam.inspedralbes.cat:3672/api/images/" + img;
         },
         handleFileUpload(event) {
             const file = event.target.files[0];
             this.producto.image = file;
         }, getGraphics(img) {
-            return "http://localhost:3672/api/graphics/" + img;
+            return "http://dam.inspedralbes.cat:3672/api/graphics/" + img;
         },
         openModal() {
             this.modal = true;
@@ -98,7 +98,7 @@ export default {
                     if (data.rol == 'Administrador' && data.autoritzacio) {
                         this.screen = 'main';
                         this.appBar = true
-                    } else{
+                    } else {
                         console.log("Equivocado");
                     }
                 })
@@ -118,11 +118,11 @@ export default {
                 <v-card class="mx-auto px-8 py-10 elevation-10" min-width="450">
                     <v-img class="mx-auto d-block" src="../assets/icon.png" max-height="95" max-width="95" contain></v-img>
                     <v-form v-model="form" @submit.prevent="onSubmit">
-                        <v-text-field v-model="usuario.usuario" required class="mb-2"
-                            clearable label="Usuari"></v-text-field>
+                        <v-text-field v-model="usuario.usuario" required class="mb-2" clearable
+                            label="Usuari"></v-text-field>
 
-                        <v-text-field type="password" v-model="usuario.passwd" required
-                            clearable label="Contrassenya"></v-text-field>
+                        <v-text-field type="password" v-model="usuario.passwd" required clearable
+                            label="Contrassenya"></v-text-field>
 
                         <br>
 
@@ -135,22 +135,22 @@ export default {
         </v-main>
 
         <v-app-bar color="blue" v-if="appBar">
-                <v-img class="mx-2 ml-5 hover-icon" src="../assets/icon.png" max-height="65" max-width="65" contain
-                    @click="screen = 'main'"></v-img>
-                <v-spacer></v-spacer>
+            <v-img class="mx-2 ml-5 hover-icon" src="../assets/icon.png" max-height="65" max-width="65" contain
+                @click="screen = 'main'"></v-img>
+            <v-spacer></v-spacer>
 
-                <v-btn @click="screen = 'recepcionComandes'">Recepcio comandes</v-btn>
-                <v-btn @click="screen = 'listadoComandes'">Llistat comandes</v-btn>
-                <v-btn @click="screen = 'resumComandes'">Resum comandes</v-btn>
-                <v-btn @click="openModal">Informes</v-btn>
-                <v-dialog v-model="modal" max-width="600">
-                    <v-carousel>
-                        <v-carousel-item v-for="(image, index) in images" :key="index">
-                            <img :src="image" alt="Imagen" @error="handleImageError">
-                        </v-carousel-item>
-                    </v-carousel>
-                </v-dialog>
-                </v-app-bar>
+            <v-btn @click="screen = 'recepcionComandes'">Recepcio comandes</v-btn>
+            <v-btn @click="screen = 'listadoComandes'">Llistat comandes</v-btn>
+            <v-btn @click="screen = 'resumComandes'">Resum comandes</v-btn>
+            <v-btn @click="openModal">Informes</v-btn>
+            <v-dialog v-model="modal" max-width="600">
+                <v-carousel>
+                    <v-carousel-item v-for="(image, index) in images" :key="index">
+                        <img :src="image" alt="Imagen" @error="handleImageError">
+                    </v-carousel-item>
+                </v-carousel>
+            </v-dialog>
+        </v-app-bar>
 
         <v-main class="box-productos" v-if="screen === 'main'">
             <v-container>
@@ -258,8 +258,9 @@ export default {
 .hover-icon {
     transition: filter 0.3s;
 }
+
 .hover-icon:hover {
     cursor: pointer;
-    filter:brightness(0.6);
+    filter: brightness(0.6);
 }
 </style>
