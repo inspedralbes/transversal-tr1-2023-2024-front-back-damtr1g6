@@ -1,15 +1,22 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib import rcParams
 import numpy as np
 import json
+import os
+from datetime import datetime
+
+
+#Verifica si existeix la carpeta
+if not os.path.exists('./graphics'):
+    os.makedirs('./graphics')
+
 
 #Per llegir l'arxiu json
 try:
     with open('informacio/dades.json', 'r') as json_file:
         data = json.load(json_file)
 except Exception as e:
-    print(f"Error al cargar el archivo JSON: {e}")
+    print(f"Error al carregar l'arxiu JSON: {e}")
 
 print(data) 
 
@@ -42,7 +49,7 @@ for product in products:
 
 prodState = ["Disponible", "No Disponible"]
 
-#Crear una lista con la cantidad de productos en cada estat
+#Crear una lista amb la quantitat de productes en cada estat
 prodsTotal = prodsAvailable + prodsNotAvailable
 
 prodsAvailablePercentage = (prodsAvailable / prodsTotal) * 100
@@ -56,10 +63,10 @@ plt.bar(prodState, prodsPercentages, color=['blue', 'red'])
 plt.xlabel('Estat del producte')
 plt.ylabel('Quanitat de productes (%)')
 plt.title('ESTATS DELS PRODUCTES')
-plt.savefig('./graphics/estatProd.png')
+plt.savefig('./graphics/estatProd.jpg')
 
 
-#GRAFICA ESTADO DE COMANDAS (preparando, procesando y recibida)
+#GRAFICA ESTADO DE COMANDAS (rebuda, processant, preparada i recollida)
 #Contar cantidad de comandas en cada estado
 orderState = {}
 
@@ -81,7 +88,7 @@ plt.xlabel('Estat de la comanda')
 plt.ylabel('Quantitat de comandes')
 plt.title('ESTAT DE LES COMANDES')
 plt.ylim(0, totalOrders)
-plt.savefig('./graphics/estatComandes.png')
+plt.savefig('./graphics/estatComandes.jpg')
 
 
 #GRAFICA DE STOCK DE LOS PRODUCTOS
@@ -102,40 +109,43 @@ plt.ylabel('Nom del porducte')
 plt.title('STOCK DELS PRODUCTES')
 plt.grid(axis='x', linestyle='--', alpha=0.6)  
 plt.tight_layout()  
-plt.savefig('./graphics/stock.png')
+plt.savefig('./graphics/stock.jpg')
 
 
 
 #GRAFICA QUANTITAT DE PRODUCTES EN COMANDES
-# orderProcess = []
-# prodXOrder = []
+orderProcess = []
+prodXOrder = []
 
-# for order in data["Comanda"]:
-#     if order["estado"] != "Rebuda":
-#         orderProcess.append(order)
+for order in data["Comanda"]:
+    if order["estado"] != "Recollida":
+        orderProcess.append(order)
 
-# for order in orderProcess:
-#     prodQuant = 0
-#     for conte in data["Contiene"]:
-#         if conte["id_comanda"] == order["id"]:
-#             prodQuant += 1
-#     prodXOrder.append(prodQuant)
+for order in orderProcess:
+    prodQuant = 0
+    for conte in data["Contiene"]:
+        if conte["id_comanda"] == order["id"]:
+            prodQuant += 1
+    prodXOrder.append(prodQuant)
 
-# ordersLabel = [f'Comanda {order["id"]}' for order in orderProcess]
+maxProdXOrder = max(prodXOrder)
 
-
-# plt.figure(figsize=(10, 6))
-# plt.barh(prodXOrder,range(len(orderProcess)), color='skyblue')
-# plt.ylabel('Comandes')
-# plt.xlabel('Quantitat de productes')
-# plt.title('QUANTITAT DE PRODUCTES EN COMANDES ACTIVES')
-# plt.yticks(range(len(orderProcess)), ordersLabel, rotation=45)
-# plt.tight_layout()
-# plt.savefig('./informes/quantProd.png')
+ordersLabel = [f'Comanda {order["id"]}' for order in orderProcess]
 
 
+plt.figure(figsize=(10, 6))
+plt.barh(ordersLabel, prodXOrder, color='skyblue')
+plt.ylabel('Comandes')
+plt.xlabel('Quantitat de productes')
+plt.title('QUANTITAT DE PRODUCTES EN COMANDES ACTIVES')
+plt.yticks(range(len(orderProcess)), ordersLabel, rotation=45)
+plt.xlim(0, maxProdXOrder) 
+plt.tight_layout()
+plt.savefig('./graphics/quantProd.jpg')
 
-# #GRAFICA PRECIO DE LOS PRODUCTOS VS CANTIDAD VENDIDA ??
+
+
+# #GRAFICA PRECIO DE LOS PRODUCTOS VS CANTIDAD VENDIDA
 prodName = []
 prodPrice = []
 
@@ -145,44 +155,33 @@ for prod in data["Productos"]:
 
 plt.figure(figsize=(10, 6))
 plt.scatter(prodPrice,prodName, alpha=0.5)
-plt.title('ID de Producto vs Precio')
-plt.ylabel('ID de Producto')
-plt.xlabel('Precio (en euros)')
+plt.title('Preu producte')
+plt.ylabel('Nom del producte')
+plt.xlabel('Preu')
 plt.grid(True)
 plt.tight_layout()
-plt.savefig('./informes/prodVSvendida.png')
+plt.savefig('./graphics/prodVSvendida.jpg')
 
 
 
 
 #CANTIDAD DE COMANDAS HECHAS POR USUARIO
-
-# Crear un diccionario para almacenar la cantidad de comandas por usuario
 ordersPerUser = {}
 usersNames = {}
 
 names = []
 ordersAmount = []
 
-
 for user in users:
     ordersPerUser[user["id"]] = 0
     usersNames[user["id"]] = user["usuario"]
 
-
-# Contar la cantidad de comandas para cada usuario
 for order in orders:
     userID = order["id_user"]
     ordersPerUser[userID] += 1
 
-# Extraer nombres de usuario para mostrar en el gráfico
-
-
-# Crear listas para nombres de usuario y cantidad de comandas
-
-# Llenar las listas con los datos
 for userID, amount in ordersPerUser.items():
-    names.append(usersNames[userID])  # Cambio "usuari_id" a "usuario_id"
+    names.append(usersNames[userID]) 
     ordersAmount.append(amount)
 
 # Crear el gráfico de barras
@@ -193,8 +192,35 @@ plt.xlabel('Usuari')
 plt.ylabel('Quantitat de comandes')
 plt.xticks(rotation=45, ha='right')
 
-# Mostrar el gráfico
 plt.tight_layout()
-plt.savefig('./informes/quantComand.png')
+plt.savefig('./graphics/quantComand.jpg')
 
+#HORES AMB MÉS COMANDES
+dates = [orders['fecha'] for orders in data['Comanda'] if orders['fecha'] is not None]
 
+datesRightFormat = [fecha.replace('/', '').replace(':', '') for fecha in dates]
+
+hours = []
+
+for fecha in datesRightFormat:
+    try:
+        # Intentar analizar la fecha con varios formatos
+        date_object = datetime.strptime(fecha, '%d%m%Y-%H%M')
+    except ValueError:
+        try:
+            date_object = datetime.strptime(fecha, '%d/%m/%Y%-H:%M')
+        except ValueError:
+            print(f'Formato de fecha no reconocido: {fecha}')
+            continue
+
+    hours.append(date_object.hour)
+
+countHours = {hora: hours.count(hora) for hora in set(hours)}
+
+plt.figure(figsize=(10, 6))
+plt.bar(countHours.keys(), countHours.values(), color='skyblue')
+plt.xlabel('Hora del dia')
+plt.ylabel('Quantitat de comandes')
+plt.title('Quantitat de comandes per hora')
+plt.yticks(range(int(max(countHours.values()) + 1)))  
+plt.savefig('./graphics/hores.jpg')
