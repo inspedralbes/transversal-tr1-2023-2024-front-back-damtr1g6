@@ -330,7 +330,7 @@ app.post("/loginUser", (req, res) => {
                     autorizar = true
                 }
                 res.json({ "autoritzacio": autorizar, "userID": data[0].id, "rol": data[0].rol })
-            } else{
+            } else {
                 res.json({ "autoritzacio": autorizar, "userID": 0, "rol": "" })
             }
         })
@@ -860,38 +860,45 @@ async function vigilanteBaseDatos() {
 function generateGraph() {
     vigilanteBaseDatos();
     return new Promise((resolve, reject) => {
-        var { spawn } = require("child_process");
-        var proceso = spawn("Python", ["./stats.py"]);
+        try {
+            var { spawn } = require("child_process");
+            var proceso = spawn("Python", ["./stats.py"]);
 
-        proceso.on("close", (code) => {
-            if (code === 0) {
-                resolve();
-            } else {
-                console.error(
-                    `${code}`
-                );
-                reject(
-                    `${code}`
-                );
-            }
-        });
+            proceso.on("close", (code) => {
+                if (code === 0) {
+                    resolve();
+                } else {
+                    console.error(
+                        `${code}`
+                    );
+                    reject(
+                        `${code}`
+                    );
+                }
+            });
+        } catch (err) {
+            console.error(err);
+            reject(err);
+        }
+        resolve();
     });
 }
 
 app.use('/graphics', express.static(path.join(__dirname, 'graphics')));
+
 app.get('/graphics', async (req, res) => {
     await generateGraph();
     try {
-    const images = [
-        'http://localhost:3672/graphics/estatComandes.jpg', 
-        'http://localhost:3672/graphics/estatProd.jpg', 
-        'http://localhost:3672/graphics/prodVSvendida.jpg', 
-        'http://localhost:3672/graphics/quantComand.jpg', 
-        'http://localhost:3672/graphics/quantProd.jpg', 
-        'http://localhost:3672/graphics/stock.jpg',
-        'http://localhost:3672/graphics/hores.jpg' ];
-    res.json(images);
-    } catch{
-        console.error("Error al generar les gràfiques:", error);        
+        const images = [
+            'http://localhost:3672/graphics/estatComandes.jpg',
+            'http://localhost:3672/graphics/estatProd.jpg',
+            'http://localhost:3672/graphics/prodVSvendida.jpg',
+            'http://localhost:3672/graphics/quantComand.jpg',
+            'http://localhost:3672/graphics/quantProd.jpg',
+            'http://localhost:3672/graphics/stock.jpg',
+            'http://localhost:3672/graphics/hores.jpg'];
+        res.json(images);
+    } catch {
+        console.error("Error al generar les gràfiques:", error);
     }
 });
