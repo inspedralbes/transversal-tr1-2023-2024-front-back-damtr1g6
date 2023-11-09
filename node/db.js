@@ -105,6 +105,7 @@ io.on('connection', async (socket) => {
                 }
             });
             let j = 0;
+            data = data.filter(comanda => comanda.estado_comanda == 'Recollida')
             for(let i = data.length-1 ; i > data.length-11; i--){
                 console.log(j);
                 result.push(data[i]);
@@ -112,6 +113,21 @@ io.on('connection', async (socket) => {
             }
             console.log(result);
             io.emit('comanda', result)
+        })
+        
+    })
+
+    socket.on('getComandaByIDInProcess', async (id) => {
+        selectComandaByID(id)
+        .then(data =>{
+            data.forEach(element => {
+                if(element.productos != null){
+                element.productos = desconcatenador(element)
+                }
+            });
+            let j = 0;
+            data = data.filter(comanda => comanda.estado_comanda == 'Processant')
+            io.emit('comanda', data)
         })
         
     })
