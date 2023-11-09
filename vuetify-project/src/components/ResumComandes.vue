@@ -30,7 +30,7 @@ export default {
             <v-row>
                 <v-col>
                     <v-card style="height: 100vh; padding: 30px;">
-                        <v-card-title>EN PREPARACIO</v-card-title>
+                        <v-card-title>EN PREPARACIÓ</v-card-title>
                         <v-divider></v-divider>
                         <br>
                         <v-row>

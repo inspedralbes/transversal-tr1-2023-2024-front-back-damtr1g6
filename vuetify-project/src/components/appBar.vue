@@ -107,7 +107,7 @@ export default {
                         <br>
 
                         <v-btn block color="success" size="large" type="submit" variant="elevated">
-                            Sign In
+                            Log in
                         </v-btn>
                     </v-form>
                 </v-card>
@@ -115,8 +115,8 @@ export default {
         </v-main>
 
         <v-app-bar color="blue" v-if="appBar">
-                <v-img class="mx-2 ml-5" src="../assets/icon.png" max-height="65" max-width="65" contain
-                    @click="screen = 'main'" style=":hover"></v-img>
+                <v-img class="mx-2 ml-5 hover-icon" src="../assets/icon.png" max-height="65" max-width="65" contain
+                    @click="screen = 'main'"></v-img>
                 <v-spacer></v-spacer>
 
                 <v-btn @click="screen = 'recepcionComandes'">Recepcio comandes</v-btn>
@@ -235,4 +235,12 @@ export default {
     </v-layout>
 </template>
 
-<style scoped></style>
+<style scoped>
+.hover-icon {
+    transition: filter 0.3s;
+}
+.hover-icon:hover {
+    cursor: pointer;
+    filter:brightness(0.6);
+}
+</style>
