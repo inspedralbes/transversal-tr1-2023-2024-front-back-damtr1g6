@@ -110,10 +110,8 @@ export default {
             this.modal = true;
         },
         onSubmit() {
-            console.log(this.usuario);
             loginUser(this.usuario)
                 .then(data => {
-                    console.log(data);
                     if (data.rol == 'Administrador' && data.autoritzacio) {
                         this.screen = 'main';
                         this.appBar = true

@@ -57,7 +57,6 @@ export async function updateProducte(dadaProducte) {
 }
 
 export async function loginUser(user) {
-    console.log(JSON.stringify(user));
     const response = await fetch(`http://localhost:3672/loginUser`, {
         method: 'POST',
         headers: {

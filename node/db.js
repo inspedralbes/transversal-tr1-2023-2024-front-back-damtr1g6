@@ -115,7 +115,6 @@ io.on('connection', async (socket) => {
                         result.push(data[i]);
                     }
                 }
-                console.log(result);
                 io.emit('comanda', result);
             })
 
@@ -123,20 +122,19 @@ io.on('connection', async (socket) => {
 
     socket.on('getComandaByIDInProcess', async (id) => {
         selectComandaByID(id)
-        .then(data => {
-            if (data.length > 0) {  // Verifica que data tenga al menos un elemento
-                data.forEach(element => {
-                    if (element.productos != null) {
-                        element.productos = desconcatenador(element)
-                    }
-                });
-                data = data.filter(comanda => comanda.estado_comanda == 'Processant')
-                console.log(data);
-                io.emit('comanda', data)
-            } else {
-                console.log('No se encontraron comandas para el ID especificado');
-            }
-        });
+            .then(data => {
+                if (data.length > 0) {  // Verifica que data tenga al menos un elemento
+                    data.forEach(element => {
+                        if (element.productos != null) {
+                            element.productos = desconcatenador(element)
+                        }
+                    });
+                    data = data.filter(comanda => comanda.estado_comanda == 'Processant' || comanda.estado_comanda == 'Preparada')
+                    io.emit('comanda', data)
+                } else {
+                    console.log('No se encontraron comandas para el ID especificado');
+                }
+            });
     })
 
     socket.on('getProductes', async (id) => {
@@ -152,9 +150,8 @@ io.on('connection', async (socket) => {
     socket.on('changeState', async (comanda) => {
         updateStateDB(comanda.id, comanda.state);
         updateStateComandas(comandas, comanda.id, comanda.state);
-        io.emit('comandas', comandas);
-
         getComandaByIDInProcess(comanda.id);
+        io.emit('comandas', comandas);
     });
 
     socket.on('deleteComanda', async (id) => {
@@ -168,11 +165,10 @@ io.on('connection', async (socket) => {
 
     });
 });
-    
+
 // Agrega esta función para reutilizarla en ambos eventos
 async function getComandaByIDInProcess(id) {
     var id_user = await selectDBMiUsuario(id);
-    console.log(id_user);
     selectComandaByID(id_user[0].id_user)
         .then(data => {
             if (data.length > 0) {  // Verifica que data tenga al menos un elemento
@@ -181,8 +177,7 @@ async function getComandaByIDInProcess(id) {
                         element.productos = desconcatenador(element)
                     }
                 });
-                data = data.filter(comanda => comanda.estado_comanda == 'Processant')
-                console.log(data);
+                data = data.filter(comanda => comanda.estado_comanda == 'Processant' || comanda.estado_comanda == 'Preparada')
                 io.emit('comanda', data)
             } else {
                 console.log('No se encontraron comandas para el ID especificado');
@@ -341,7 +336,6 @@ app.post("/usuario", (req, res) => {
 
 app.post("/loginUser", (req, res) => {
     const datos = req.body;
-    console.log(datos);
     selectDBUserLogin(datos.usuario, datos.passwd)
         .then((data) => {
             let autorizar = false
@@ -354,10 +348,6 @@ app.post("/loginUser", (req, res) => {
                 res.json({ "autoritzacio": autorizar, "userID": 0, "rol": "" })
             }
         })
-})
-
-app.post("/miUsuario", (req, res) => {
-    res.json(user)
 })
 
 app.get('/usuarioID/:id', (req, res) => {
@@ -416,29 +406,6 @@ app.post("/insertProducte", async (req, res) => {
 
     procesarProductos();
 })
-
-app.get('/comandaID/:id_user', (req, res) => {
-    console.log("aaaaaaaaa");
-    const comandaID = req.params.id_user;
-    console.log(req.params.id_user);
-    selectComandaByID(comandaID)
-        .then(result => {
-            console.log(result);
-            if (result.length > 0) {
-                // console.log(result);
-                // result.forEach(comanda => {
-                //     var productos = desconcatenador(comanda.productos);
-                //     comanda.producto = productos;
-                //     console.log(comanda);
-                // });
-            } else {
-            }
-        })
-        .catch(error => {
-            res.status(500).json({ error: 'Error en la consulta a la base de datos' });
-        });
-    res.json(productos)
-});
 
 /* --- CERRAR GESTION DE COMANDAS --- */
 
