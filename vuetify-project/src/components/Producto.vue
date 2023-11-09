@@ -21,7 +21,10 @@ export default {
                 this.modalExist = true;
             }
         },
-        async updateP(producte) {
+        async updateP(producte, estado) {
+            if(estado != undefined){
+                producte.estado = estado;
+            }
             await updateProducte(producte);
         },
         handleFileUpload(event) {
@@ -37,7 +40,7 @@ export default {
 
 <template>
     
-    <v-card style="height: 510px">
+    <v-card style="height: 558px">
         <v-img :src="imageName" height="380px" alter="no encontrado" cover></v-img>
 
         <v-card-title>
@@ -48,8 +51,15 @@ export default {
             {{ producto.descripcion }}
         </v-card-subtitle>
 
+        <v-card-text style="padding-bottom: 0px">
+            <v-row>
+                <v-col>{{ producto.precio }} €</v-col>
+                <v-col class="d-flex flex-row-reverse">Stock: {{ producto.stock }}</v-col>
+            </v-row>
+        </v-card-text>
         <v-card-actions icon>
-            <v-card-text>{{ producto.precio }} €</v-card-text>
+            <v-card-text v-if="producto.estado == 'Disponible'" class="pa-2 text-center bg-green rounded-xl ml-1 hover-estado" @click="updateP(producto, 'No disponible')">{{ producto.estado }}</v-card-text>
+            <v-card-text v-else class="pa-2 text-center bg-red rounded-xl ml-1 hover-estado" @click="updateP(producto, 'Disponible')">{{ producto.estado }}</v-card-text>
             <v-spacer></v-spacer>
             <v-btn color="blue" variant="text" icon="mdi-delete-outline" @click="deleteP(producto.id)"></v-btn>
             <v-dialog v-model="dialog" persistent width="1024">
@@ -60,7 +70,7 @@ export default {
                 </template>
                 <v-card>
                     <v-card-title>
-                        <span class="text-h5">Producto</span>
+                        <span class="text-h5">Producte</span>
                     </v-card-title>
                     <v-card-text>
                         <v-container>
@@ -74,32 +84,32 @@ export default {
                                 </v-col>
 
                                 <v-col cols="12">
-                                    <v-text-field label="Descripcio*" v-model="producto.descripcion"
-                                        hint="Ensalada fresca de frutas tropicales" required></v-text-field>
+                                    <v-text-field label="Descripció*" v-model="producto.descripcion"
+                                        hint="Amanida fresca de fruites tropicals" required></v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="4">
-                                    <v-file-input accept="image/*" label="Image" @change="handleFileUpload"
+                                    <v-file-input accept="image/*" label="Imatge" @change="handleFileUpload"
                                         require></v-file-input>
                                 </v-col>
                                 <v-col cols="12" sm="4">
-                                    <v-text-field label="Stock*" v-model="producto.stock" type="number"
+                                    <v-text-field label="Estoc*" v-model="producto.stock" type="number"
                                         required></v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="4">
-                                    <v-select :items="['Disponible', 'No disponible']" label="Estado*" required
+                                    <v-select :items="['Disponible', 'No disponible']" label="Estat*" required
                                         v-model="producto.estado"></v-select>
                                 </v-col>
                             </v-row>
                         </v-container>
-                        <small>*indicates required field</small>
+                        <small>*Indica camp requerit</small>
                     </v-card-text>
                     <v-card-actions>
                         <v-spacer></v-spacer>
                         <v-btn color="blue-darken-1" variant="text" @click="dialog = false">
-                            Close
+                            Tancar
                         </v-btn>
                         <v-btn color="blue-darken-1" variant="text" @click="dialog = false; updateP(producto)">
-                            Save
+                            Guardar
                         </v-btn>
                     </v-card-actions>
                 </v-card>
@@ -108,7 +118,7 @@ export default {
                 <v-card>
                     <v-card-title class="headline"><v-icon color="warning" icon="mdi-alert"></v-icon></v-card-title>
                     <v-card-text>
-                        El producto está siendo utilizado en una comanda existente.
+                        El producte està sent utilitzat en una comanda existent.
                     </v-card-text>
                     <v-card-actions>
                         <v-btn @click="closeModal" color="primary">Okey</v-btn>
@@ -119,5 +129,13 @@ export default {
     </v-card>
 </template>
 
-<style scoped></style>
+<style scoped>
+.hover-estado {
+    transition: filter 0.3s;
+}
+.hover-estado:hover {
+    cursor: pointer;
+    filter:brightness(1.1);
+}
+</style>
   
