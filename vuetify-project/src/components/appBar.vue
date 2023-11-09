@@ -1,10 +1,11 @@
 <script setup>
-import { addProducte, deleteProducte } from '@/services/communicationManager';
+import { loginUser, addProducte, deleteProducte } from '@/services/communicationManager';
 import { socket, state } from '@/services/socket';
 import Producto from "../components/Producto.vue";
 import ListadoComandes from "../components/ListadoComandes.vue";
-import ResumComandes from "../components/ResumComandes.vue"
-import RecepcioComandes from "../components/RecepcioComandes.vue"
+import ResumComandes from "../components/ResumComandes.vue";
+import RecepcioComandes from "../components/RecepcioComandes.vue";
+import DialogoEnviar from "../components/DialogoEnviar.vue";
 </script>
 
 <script>
@@ -19,15 +20,22 @@ export default {
             "estado": "",
             "image": "",
         },
+        usuario: {
+            "usuario": "",
+            "passwd": "",
+        },
         comandes: [],
         dialog: false,
         showConfirmation: false,
         show: false,
-        screen: "main",
+        screen: "login",
+        appBar:false,
         buscar: "",
         images: [],
         modal: false,
         loadingImages: false,
+        dialogSend: false,
+        dialogSendMessage: "",
     }),
     mounted() {
         socket.emit('getComandas', {});
@@ -51,21 +59,33 @@ export default {
     },
     computed: {
         productes() {
-            this.searchProduct = state.productes[0]
+            this.searchProduct = state.productes[0];
         }
     },
     methods: {
         async addProduct() {
-            await addProducte(this.producto);
+            this.dialogSend = true;
+            this.dialogSendMessage = "loading";
+            let response = await addProducte(this.producto);
+
+            this.producto = {
+                "nombre": "",
+                "descripcion": "",
+                "precio": 0,
+                "stock": 0,
+                "estado": "",
+                "image": "",
+            };
+
             this.showConfirmation = true;
-            console.log(this.showConfirmation);
+            if (response.message == undefined) {
+                this.dialogSendMessage = "";
+            } else {
+                this.dialogSendMessage = "error";
+            }
         },
         async deleteP(id) {
             await deleteProducte(id);
-
-        },
-        async callGetProductes() {
-
         },
         search() {
             this.searchProduct = {};
@@ -89,6 +109,20 @@ export default {
         openModal() {
             this.modal = true;
         },
+        onSubmit() {
+            console.log(this.usuario);
+            loginUser(this.usuario)
+                .then(data => {
+                    console.log(data);
+                    if (data.rol == 'Administrador' && data.autoritzacio) {
+                        this.screen = 'main';
+                        this.appBar = true
+                    }
+                })
+        },
+        updateDialogSend(newValue) {
+            this.dialogSend = newValue;
+        }
     }
 }
 
@@ -96,27 +130,49 @@ export default {
 
 <template>
     <v-layout>
-        <v-app-bar color="blue">
-            <v-img class="mx-2 ml-5" src="../assets/icon.png" max-height="65" max-width="65" contain
-                @click="screen = 'main'" style=":hover"></v-img>
-            <v-spacer></v-spacer>
+        <v-main v-if="screen === 'login'">
+            <v-container class="d-flex justify-center align-center" style="height: 100vh;">
+                <v-card class="mx-auto px-8 py-10 elevation-10" min-width="450">
+                    <v-img class="mx-auto d-block" src="../assets/icon.png" max-height="95" max-width="95" contain></v-img>
+                    <v-form v-model="form" @submit.prevent="onSubmit">
+                        <v-text-field v-model="usuario.usuario" required class="mb-2"
+                            clearable label="Usuari"></v-text-field>
 
-            <v-btn @click="screen = 'recepcionComandes'">Recepcio comandes</v-btn>
-            <v-btn @click="screen = 'listadoComandes'">Llistat comandes</v-btn>
-            <v-btn @click="screen = 'resumComandes'">Resum comandes</v-btn>
-            <v-btn @click="openModal">Informes</v-btn>
-            <v-dialog v-model="modal" max-width="800" max-height="700">
-                <v-carousel width="800" height="500" hide-delimiters progress="primary" show-arrows="hover">
-                    <v-carousel-item v-for="(image, index) in images" :key="index">
-                        <img :src="image" alt="carousel-image" class="carousel-image">
-                    </v-carousel-item>
-                </v-carousel>
-            </v-dialog>
-            <v-img class="mx-2 mr-10" src="../assets/user.png" max-height="40" max-width="40" contain></v-img>
-        </v-app-bar>
+                        <v-text-field type="password" v-model="usuario.passwd" required
+                            clearable label="Contrassenya"></v-text-field>
+
+                        <br>
+
+                        <v-btn block color="success" size="large" type="submit" variant="elevated">
+                            Log in
+                        </v-btn>
+                    </v-form>
+                </v-card>
+            </v-container>
+        </v-main>
+
+        <v-app-bar color="blue" v-if="appBar">
+                <v-img class="mx-2 ml-5 hover-icon" src="../assets/icon.png" max-height="65" max-width="65" contain
+                    @click="screen = 'main'"></v-img>
+                <v-spacer></v-spacer>
+
+                <v-btn @click="screen = 'recepcionComandes'">Recepcio comandes</v-btn>
+                <v-btn @click="screen = 'listadoComandes'">Llistat comandes</v-btn>
+                <v-btn @click="screen = 'resumComandes'">Resum comandes</v-btn>
+                <v-btn @click="openModal">Informes</v-btn>
+                <v-dialog v-model="modal" max-width="800" max-height="700">
+                    <v-carousel width="800" height="500" hide-delimiters progress="primary" show-arrows="hover">
+                        <v-carousel-item v-for="(image, index) in images" :key="index">
+                            <img :src="image" alt="carousel-image" class="carousel-image">
+                        </v-carousel-item>
+                    </v-carousel>
+                </v-dialog>
+                </v-app-bar>
 
         <v-main class="box-productos" v-if="screen === 'main'">
             <v-container>
+                <DialogoEnviar :dialogSend="dialogSend" :dialogSendMessage="dialogSendMessage"
+                    :updateDialogSend="updateDialogSend" />
                 <v-form class="box-write">
                     <v-container>
                         <v-row>
@@ -199,17 +255,16 @@ export default {
                 <v-row>
                     <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-if="buscar.length == 0"
                         v-for="producto in state.productes[0]">
-                        <Producto :producto="producto" :callGetProductes="callGetProductes"
-                            :imageName="getImageName(producto.imagen_url)" />
+                        <Producto :producto="producto" :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
                     <v-col cols="12" class=" w-auto h-auto" xs="12" sm="6" md="3" lg="3" v-else
                         v-for="producto in this.searchProduct">
-                        <Producto :producto="producto" :callGetProductes="callGetProductes"
-                            :imageName="getImageName(producto.imagen_url)" />
+                        <Producto :producto="producto" :imageName="getImageName(producto.imagen_url)" />
                     </v-col>
                 </v-row>
             </v-container>
         </v-main>
+
         <RecepcioComandes v-if="screen === 'recepcionComandes'" />
         <ListadoComandes v-if="screen === 'listadoComandes'" />
         <ResumComandes v-if="screen === 'resumComandes'" />
@@ -217,6 +272,14 @@ export default {
 </template>
 
 <style scoped>
+.hover-icon {
+    transition: filter 0.3s;
+}
+.hover-icon:hover {
+    cursor: pointer;
+    filter:brightness(0.6);
+}
+
 .carousel-image {
     width: 100%;
     height: 100%;
