@@ -30,6 +30,8 @@ users = data["Usuarios"]
 #GRAFICA ESTATS DELS PRODUCTES
 prodsNames = []
 prodsStock = []
+prodsAvailable = 0
+prodsNotAvailable = 0
 
 for product in products:
     name = product["nombre"]
@@ -38,18 +40,11 @@ for product in products:
     prodsNames.append(name)
     prodsStock.append(stock)
 
-    
-    prodsAvailable = 0
-    prodsNotAvailable = 0
-    
     if prodState == "Disponible":
         prodsAvailable += 1
     else:
         prodsNotAvailable += 1
 
-prodState = ["Disponible", "No Disponible"]
-
-#Crear una lista amb la quantitat de productes en cada estat
 prodsTotal = prodsAvailable + prodsNotAvailable
 
 prodsAvailablePercentage = (prodsAvailable / prodsTotal) * 100
@@ -57,11 +52,10 @@ prodsNotAvailablePercentage = (prodsNotAvailable / prodsTotal) * 100
 
 prodsPercentages = [prodsAvailablePercentage, prodsNotAvailablePercentage]
 
-
 plt.figure()
-plt.bar(prodState, prodsPercentages, color=['blue', 'red'])
+plt.bar(["Disponible", "No Disponible"], prodsPercentages, color=['blue', 'red'])
 plt.xlabel('Estat del producte')
-plt.ylabel('Quanitat de productes (%)')
+plt.ylabel('Quantitat de productes (%)')
 plt.title('ESTATS DELS PRODUCTES')
 plt.savefig('./graphics/estatProd.jpg')
 
@@ -139,10 +133,11 @@ plt.ylabel('Comandes')
 plt.xlabel('Quantitat de productes')
 plt.title('QUANTITAT DE PRODUCTES EN COMANDES ACTIVES')
 plt.yticks(range(len(orderProcess)), ordersLabel, rotation=45)
-plt.xlim(0, maxProdXOrder) 
+plt.xticks(range(0, maxProdXOrder + 1))
+
+plt.xlim(0, maxProdXOrder)
 plt.tight_layout()
 plt.savefig('./graphics/quantProd.jpg')
-
 
 
 # #GRAFICA PRECIO DE LOS PRODUCTOS VS CANTIDAD VENDIDA
