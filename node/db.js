@@ -19,8 +19,10 @@ const io = new Server(server, {
     }
 });
 
+
 const PORT = 3672;
 var cors = require('cors');
+app.use(cors());
 const { rejects } = require('assert');
 
 const storage = multer.diskStorage({
@@ -32,13 +34,16 @@ const storage = multer.diskStorage({
     }
 });
 
+
+
 const upload = multer({ storage: storage });
 
 if (!fs.existsSync('./images')) {
     fs.mkdirSync('./images');
 }
 
-app.use(cors());
+
+
 app.use(express.json());
 
 const dbConfig = {
@@ -332,7 +337,9 @@ app.get('/comandaID/:id_user', (req, res) => {
 
 app.get("/api/images/:name", (req, res) => {
     res.sendFile(path.resolve("./images/" + req.params.name));
-})
+});
+
+
 
 app.post('/updateProducto', upload.single('image'), async (req, res) => {
     let producto = req.body;
@@ -740,6 +747,47 @@ async function vigilanteBaseDatos() {
             });
         });
     });
+
+
 }
 
-vigilanteBaseDatos();
+
+//Para que se ejecuten las graficas
+function generateGraph() {
+    vigilanteBaseDatos();
+    return new Promise((resolve, reject) => {
+        var { spawn } = require("child_process");
+        var proceso = spawn("Python", ["./stats.py"]);
+
+        proceso.on("close", (code) => {
+            if (code === 0) {
+                resolve();
+            } else {
+                console.error(
+                    `${code}`
+                );
+                reject(
+                    `${code}`
+                );
+            }
+        });
+    });
+}
+
+app.use('/graphics', express.static(path.join(__dirname, 'graphics')));
+app.get('/graphics', async (req, res) => {
+    await generateGraph();
+    try {
+    const images = [
+        'http://localhost:3672/graphics/estatComandes.jpg', 
+        'http://localhost:3672/graphics/estatProd.jpg', 
+        'http://localhost:3672/graphics/prodVSvendida.jpg', 
+        'http://localhost:3672/graphics/quantComand.jpg', 
+        'http://localhost:3672/graphics/quantProd.jpg', 
+        'http://localhost:3672/graphics/stock.jpg',
+        'http://localhost:3672/graphics/hores.jpg' ];
+    res.json(images);
+    } catch{
+        console.error("Error al generar les gràfiques:", error);        
+    }
+});

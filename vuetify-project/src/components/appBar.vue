@@ -25,12 +25,29 @@ export default {
         show: false,
         screen: "main",
         buscar: "",
-        images: []
+        images: [],
+        modal: false,
+        loadingImages: false,
     }),
     mounted() {
         socket.emit('getComandas', {});
         socket.emit('getProductes', {});
+        fetch('http://localhost:3672/graphics')
+            .then((response) => {
+                console.log('Raw response:', response);
 
+                if (!response.ok) {
+                    throw new Error('Non-JSON response');
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log('Data received:', data);
+                this.images = data;
+            })
+            .catch((error) => {
+                console.error('Error fetching images:', error);
+            });
     },
     computed: {
         productes() {
@@ -64,8 +81,10 @@ export default {
         handleFileUpload(event) {
             const file = event.target.files[0];
             this.producto.image = file;
-        }, getGraphics(img) {
-            return "http://localhost:3672/api/graphics/" + img;
+        },
+        handleImageError(event) {
+            console.error("Error al cargar la imagen:", event.target.src);
+            // Puedes mostrar un mensaje de error o tomar otras medidas aquí
         },
         openModal() {
             this.modal = true;
@@ -86,10 +105,10 @@ export default {
             <v-btn @click="screen = 'listadoComandes'">Llistat comandes</v-btn>
             <v-btn @click="screen = 'resumComandes'">Resum comandes</v-btn>
             <v-btn @click="openModal">Informes</v-btn>
-            <v-dialog v-model="modal" max-width="600">
-                <v-carousel>
+            <v-dialog v-model="modal" max-width="800" max-height="700">
+                <v-carousel width="800" height="500" hide-delimiters progress="primary" show-arrows="hover">
                     <v-carousel-item v-for="(image, index) in images" :key="index">
-                        <img :src="image" alt="Imagen" @error="handleImageError">
+                        <img :src="image" alt="carousel-image" class="carousel-image">
                     </v-carousel-item>
                 </v-carousel>
             </v-dialog>
@@ -197,4 +216,10 @@ export default {
     </v-layout>
 </template>
 
-<style scoped></style>
+<style scoped>
+.carousel-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+</style>
