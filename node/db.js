@@ -20,7 +20,7 @@ const io = new Server(server, {
 });
 
 
-const PORT = 3672;
+const PORT = 3673;
 var cors = require('cors');
 app.use(cors());
 const { rejects } = require('assert');
@@ -864,7 +864,7 @@ function generateGraph() {
     return new Promise((resolve, reject) => {
         try {
             var { spawn } = require("child_process");
-            var proceso = spawn("Python", ["./stats.py"]);
+            var proceso = spawn("python3", ["./stats.py"]);
 
             proceso.on("close", (code) => {
                 if (code === 0) {
@@ -893,13 +893,13 @@ app.get('/graphics', async (req, res) => {
     try {
         await generateGraph();
     const images = [
-        'http://localhost:3672/graphics/estatComandes.jpg', 
-        'http://localhost:3672/graphics/estatProd.jpg', 
-        'http://localhost:3672/graphics/prodVSvendida.jpg', 
-        'http://localhost:3672/graphics/quantComand.jpg', 
-        'http://localhost:3672/graphics/quantProd.jpg', 
-        'http://localhost:3672/graphics/stock.jpg',
-        'http://localhost:3672/graphics/hores.jpg' ];
+        'http://tastybyte.dam.inspedralbes.cat:3673/graphics/estatComandes.jpg', 
+        'http://tastybyte.dam.inspedralbes.cat:3673/graphics/estatProd.jpg', 
+        'http://tastybyte.dam.inspedralbes.cat:3673/graphics/prodVSvendida.jpg', 
+        'http://tastybyte.dam.inspedralbes.cat:3673/graphics/quantComand.jpg', 
+        'http://tastybyte.dam.inspedralbes.cat:3673/graphics/quantProd.jpg', 
+        'http://tastybyte.dam.inspedralbes.cat:3673/graphics/stock.jpg',
+        'http://tastybyte.dam.inspedralbes.cat:3673/graphics/hores.jpg' ];
     res.json(images);
     } catch{
         console.error("Error al generar les gràfiques:", error);        
