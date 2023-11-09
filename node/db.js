@@ -305,6 +305,21 @@ app.post("/miUsuario", (req, res) => {
     res.json(user)
 })
 
+app.get('/usuarioID/:id', (req, res) => {
+    const userId = req.params.id;
+    selectDBUserID(userId)
+        .then(result => {
+            if (result.length > 0) {
+                res.json(result);
+            } else {
+            }
+        })
+        .catch(error => {
+            res.status(500).json({ error: 'Error en la consulta a la base de datos' });
+        });
+});
+
+
 /* --- CERRAR GESTION DE USUARIOS --- */
 
 /* --- GESTION DE COMANDAS --- */
@@ -436,6 +451,21 @@ function selectDBProducteID(id) {
         });
         disconnectDB(con);
     });
+}
+
+function selectDBUserID(id) {
+    return new Promise((resolve, reject) => {
+        let con = conectDB();
+        var sql = `SELECT * FROM Usuario WHERE id="${id}"`
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(result);
+            }
+        })
+        disconnectDB(con);
+    })
 }
 
 function selectComandaByID(id_user) {
